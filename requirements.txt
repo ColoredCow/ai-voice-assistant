@@ -26,13 +26,16 @@ pycparser==2.22
 PyYAML==6.0.2
 regex==2024.9.11
 requests==2.32.3
+safetensors==0.4.5
 scipy==1.14.1
 six==1.16.0
 sounddevice==0.5.1
 sympy==1.13.1
 tiktoken==0.8.0
+tokenizers==0.20.1
 torch==2.5.0
 tqdm==4.66.5
+transformers==4.45.2
 typing_extensions==4.12.2
 urllib3==2.2.3
 wcwidth==0.2.13
