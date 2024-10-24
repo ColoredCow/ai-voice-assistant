@@ -36,7 +36,8 @@ def save_audio(file_name, audio_data, sample_rate):
     scipy.io.wavfile.write(file_name, sample_rate, audio_data)
 
 def get_chatbot_response(input_text):
-    instruction = "कृपया पुढील प्रश्नाचे उत्तर मराठीत द्या:\n"
+    instruction = "कृपया पुढील प्रश्नाचे उत्तर मराठीत द्या:\n" # marathi
+    # instruction = "দয়া করে নিচের প্রশ্নের উত্তর দিন মারাঠিতে:\n" # bengali
     prompt = instruction + input_text
     messages = [
         {"role": "system", "content": "You are a chatbot designed to help Indian farmers on any agriculture related questions they have. Be a helpful guide and friend to empower them take best decisions for their crops and growth. Keep your responses brief and short until asked for details. Translate all your response to Marathi."},
