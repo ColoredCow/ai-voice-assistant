@@ -51,31 +51,27 @@ def get_chatbot_response(input_text):
 # Flask route to record and transcribe audio
 @app.route('/record', methods=['GET'])
 def record_audio_endpoint():
-    # duration = 5
-    # file_name = "audio-input.wav"
+    duration = 5
+    file_name = "static/audio-input.wav"
 
-    # # Record and save the audio
-    # audio_data, sample_rate = record_audio(duration=duration)
-    # save_audio(file_name, audio_data, sample_rate)
+    # Record and save the audio
+    audio_data, sample_rate = record_audio(duration=duration)
+    save_audio(file_name, audio_data, sample_rate)
 
-    # # Transcribe using Whisper
-    # result = whisper_model.transcribe(file_name, task="translate")
-    # transcription = result['text']
-    # print(f"Transcription: {transcription}")
+    # Transcribe using Whisper
+    result = whisper_model.transcribe(file_name, task="translate")
+    transcription = result['text']
+    print(f"Transcription: {transcription}")
 
-    # user_input = transcription
-    user_input = 'Hello I am Ramesh. Who are you?'
+    user_input = transcription
     response = get_chatbot_response(user_input)
 
     response_text = response['content']
 
     print(f"Response: {response_text}")
 
-    # tts = gTTS(text=response_text, lang='mr', tld='co.in')
-    # tts.save("final-output.mp3")
-
-    # # Play the output on macos
-    # os.system("afplay final-output.mp3")
+    tts = gTTS(text=response_text, lang='mr', tld='co.in')
+    tts.save("static/final-output.mp3")
 
     return render_template('record.html', user_input=user_input, response_text=response_text)
 

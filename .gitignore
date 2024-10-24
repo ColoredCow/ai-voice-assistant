@@ -2,5 +2,5 @@ env
 
 .DS_Store
 
-audio-input.wav
-final-output.mp3
+static/*.wav
+static/*.mp3
