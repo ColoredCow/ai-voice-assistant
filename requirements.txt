@@ -1,3 +1,4 @@
+accelerate==1.0.1
 blinker==1.8.2
 certifi==2024.8.30
 cffi==1.17.1
@@ -22,6 +23,7 @@ openai-whisper @ git+https://github.com/openai/whisper.git@25639fc17ddc013d56c59
 packaging==24.1
 pfzy==0.3.4
 prompt_toolkit==3.0.48
+psutil==6.1.0
 pycparser==2.22
 PyYAML==6.0.2
 regex==2024.9.11
