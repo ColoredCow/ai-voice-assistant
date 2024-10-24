@@ -1,3 +1,6 @@
 env
 
-output.wav
+.DS_Store
+
+audio-input.wav
+final-output.mp3
