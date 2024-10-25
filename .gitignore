@@ -2,5 +2,5 @@ env
 
 .DS_Store
 
-static/*.wav
-static/*.mp3
+static/recordings/
+static/outputs/
