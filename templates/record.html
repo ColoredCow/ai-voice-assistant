@@ -8,12 +8,29 @@
 <body>
     <h1>Response from the Model</h1>
 
-    <p><strong>User Input:</strong> {{ user_input }}</p>
-    <p><strong>Model Response:</strong> {{ response_text }}</p>
-    <!-- Audio play button -->
-    <audio controls>
-        <source src="{{ url_for('static', filename='final-output.mp3') }}" type="audio/mpeg">
-        Your browser does not support the audio element.
-    </audio>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Recorder</title>
+</head>
+<body>
+    <h1>Record Audio</h1>
+    <button id="recordButton">Start/Stop Recording</button>
+    <p id="recordingStatus">Status: Idle</p>
+    <div id="assistanceResponse" style="display: none;">
+        <p><strong>User Input:</strong> <span id="userInputText"></span></p>
+        <p><strong>Model Response:</strong> <span id="modelResponseText"></span></p>
+        <!-- Audio play button -->
+        <audio controls id="modelResponsePlayer">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+    <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
 </body>
 </html>

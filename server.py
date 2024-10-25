@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template, request, url_for
 import sounddevice as sd
 import scipy.io.wavfile
 import whisper
@@ -49,15 +49,28 @@ def get_chatbot_response(input_text):
     )
     return outputs[0]["generated_text"][-1]
 
-# Flask route to record and transcribe audio
-@app.route('/record', methods=['GET'])
-def record_audio_endpoint():
-    duration = 5
-    file_name = "static/audio-input.wav"
+# Route to render the HTML page with the recording UI
+@app.route('/')
+def index():
+    return render_template('record.html')
 
-    # Record and save the audio
-    audio_data, sample_rate = record_audio(duration=duration)
-    save_audio(file_name, audio_data, sample_rate)
+# Flask route to record and transcribe audio
+@app.route('/process-audio', methods=['POST'])
+def record_audio_endpoint():
+    if 'audio_data' not in request.files:
+        return jsonify({"error": "No audio file uploaded"}), 400
+
+    audio_data = request.files['audio_data']
+    audio_bytes = audio_data.read()
+
+    RECORDING_SAVE_PATH = "static/recordings"
+    os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
+
+    audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
+    with open(audio_filename, "wb") as f:
+        f.write(audio_bytes)
+
+    file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
 
     # Transcribe using Whisper
     result = whisper_model.transcribe(file_name, task="translate")
@@ -66,15 +79,21 @@ def record_audio_endpoint():
 
     user_input = transcription
     response = get_chatbot_response(user_input)
-
     response_text = response['content']
-
     print(f"Response: {response_text}")
 
+    OUTPUT_SAVE_PATH = "static/outputs"
+    os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
     tts = gTTS(text=response_text, lang='mr', tld='co.in')
-    tts.save("static/final-output.mp3")
+    tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
 
-    return render_template('record.html', user_input=user_input, response_text=response_text)
+    audio_file_path = url_for('static', filename='outputs/final-output.mp3')
+
+    return jsonify({
+        "user_input": user_input,
+        "response_text": response_text,
+        "audio_file_path": audio_file_path,
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
