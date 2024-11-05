@@ -1,4 +1,5 @@
 accelerate==1.0.1
+bitsandbytes==0.42.0
 blinker==1.8.2
 certifi==2024.8.30
 cffi==1.17.1
@@ -36,9 +37,9 @@ sounddevice==0.5.1
 sympy==1.13.1
 tiktoken==0.8.0
 tokenizers==0.20.1
-torch==2.5.0
+torch==2.5.1
 tqdm==4.66.5
-transformers==4.45.2
+transformers==4.46.1
 typing_extensions==4.12.2
 urllib3==2.2.3
 wcwidth==0.2.13
