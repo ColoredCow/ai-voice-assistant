@@ -24,9 +24,11 @@ numpy==2.0.2
 openai-whisper @ git+https://github.com/openai/whisper.git@25639fc17ddc013d56c594bfbf7644f2185fad84
 packaging==24.1
 pfzy==0.3.4
+pillow==11.0.0
 prompt_toolkit==3.0.48
 psutil==6.1.0
 pycparser==2.22
+python-dotenv==1.0.1
 PyYAML==6.0.2
 regex==2024.9.11
 requests==2.32.3
@@ -38,6 +40,8 @@ sympy==1.13.1
 tiktoken==0.8.0
 tokenizers==0.20.1
 torch==2.5.1
+torchaudio==2.5.1
+torchvision==0.20.1
 tqdm==4.66.5
 transformers==4.46.1
 typing_extensions==4.12.2
