@@ -1,29 +1,16 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-import torch
+from mlx_lm import load, generate
 
-# Define model ID
-model_id = "meta-llama/Llama-3.2-1B-Instruct"
+model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
+# model, tokenizer = load("/Users/coloredcow/.cache/lm-studio/models/mlx-community/Llama-3.2-3B-Instruct-4bit")
 
-# Set up 4-bit quantization configuration
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=False,
-    load_in_8bit=True  # Optional; set to True if you want to load in 8-bit as well
-)
+prompt="hello there how are you?"
 
-# Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+if hasattr(tokenizer, "apply_chat_template") and tokenizer.chat_template is not None:
+    messages = [{"role": "user", "content": prompt}]
+    prompt = tokenizer.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
 
-# Load model with 4-bit quantization
-model = AutoModelForCausalLM.from_pretrained(
-    model_id,
-    quantization_config=bnb_config,
-    device_map="auto"
-)
-
-# Example usage
-prompt = "hello how are you?"
-inputs = tokenizer(prompt, return_tensors="pt").to("cuda")  # Move to GPU if available
-outputs = model.generate(**inputs, max_new_tokens=50)
-response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
+response = generate(model, tokenizer, prompt=prompt, verbose=True)
+print('response......')
 print(response)
