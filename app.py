@@ -7,6 +7,16 @@ from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, BitsAndB
 from gtts import gTTS
 import os
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+from huggingface_hub import login
+
+# Load the environment variables from the .env file
+load_dotenv()
+
+# login to huggingface
+huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
+login(token=huggingface_token)
 
 def get_current_time():
     """Get the current time"""

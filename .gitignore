@@ -1,6 +1,8 @@
-env
+env/
 
 .DS_Store
 
 static/recordings/
 static/outputs/
+
+.env
