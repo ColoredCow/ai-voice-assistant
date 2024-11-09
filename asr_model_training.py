@@ -23,7 +23,9 @@ def load_and_preprocess_data(custom_audio_files=None, custom_transcriptions=None
     :return: Combined dataset of Common Voice and client data (if available)
     """
     # Load the Common Voice Marathi dataset
+    print("start loading")
     common_voice = load_dataset("mozilla-foundation/common_voice_11_0", "mr")
+    print("end loading")
 
     # Check if custom client data is provided; if not, set them to empty lists
     if custom_audio_files is None or custom_transcriptions is None or len(custom_audio_files) == 0 or len(custom_transcriptions) == 0:
@@ -149,6 +151,8 @@ def start_training(custom_audio_files=None, custom_transcriptions=None):
 if __name__ == "__main__":
     custom_audio_files = None 
     custom_transcriptions = None
+    # custom_audio_files = ["path/to/your/file1.wav", "path/to/your/file2.wav"]
+    # custom_transcriptions = ["transcription 1", "transcription 2"]
 
     # Start training and uploading process
     start_training(custom_audio_files, custom_transcriptions)
