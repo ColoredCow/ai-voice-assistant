@@ -5,8 +5,11 @@ from flask import Flask, jsonify, render_template, request, url_for
 from gtts import gTTS
 import os
 from datetime import datetime
+import librosa
 
+import torch
 import whisper
+from transformers import WhisperProcessor, WhisperForConditionalGeneration
 from dotenv import load_dotenv # type: ignore
 import os
 from huggingface_hub import login
@@ -22,8 +25,17 @@ login(token=huggingface_token)
 # Initialize Flask app
 app = Flask(__name__)
 
+MODEL_NAME = "your-username/whisper_finetuned_marathi" 
+
+# Load the Whisper model and processor from Hugging Face
+def load_finetuned_model():
+    processor = WhisperProcessor.from_pretrained(MODEL_NAME)
+    model = WhisperForConditionalGeneration.from_pretrained(MODEL_NAME)
+    return processor, model
+
 # # Load Whisper model
-whisper_model = whisper.load_model("medium")
+# whisper_model = whisper.load_model("medium")
+processor, model = load_finetuned_model()
 
 model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
 
@@ -96,9 +108,23 @@ def get_chatbot_response(input_text, language):
     print("response generated", response)
     return {"content": response}
 
+
 def transcribe_audio(file_path, language):
-    result = whisper_model.transcribe(file_path, task="translate", language=language)
-    return result.get("text", "")
+    # result = whisper_model.transcribe(file_path, task="translate", language=language)
+    # return result.get("text", "")
+    # Load the audio file using librosa
+    audio_array, sampling_rate = librosa.load(file_path, sr=16000)
+
+    # Preprocess audio with WhisperProcessor
+    inputs = processor(audio_array, sampling_rate=sampling_rate, return_tensors="pt")
+    input_features = inputs.input_features
+
+    # Generate transcription using the fine-tuned model
+    with torch.no_grad():
+        logits = model(input_features).logits
+        transcription = processor.decode(logits[0], skip_special_tokens=True)
+
+    return transcription
 
 def convert_to_audio(text, language):
     os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
