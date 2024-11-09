@@ -4,11 +4,10 @@ from transformers import WhisperProcessor, WhisperForConditionalGeneration, Seq2
 from huggingface_hub import HfApi, login
 import librosa
 from transformers import WhisperTokenizer
-import torch
 from datasets import load_metric
 
 # Define the model name at the top-level
-MODEL_NAME = "./whisper_finetuned_marathi"  # You can change this to your desired local or Hugging Face model name
+MODEL_NAME = "./whisper_finetuned_marathi_paani"
 
 # Hugging Face login using your token (set this in the environment variable 'HUGGINGFACE_TOKEN')
 huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
@@ -123,7 +122,6 @@ def train_model(custom_audio_files=None, custom_transcriptions=None):
 
 # Push model to Hugging Face Hub
 def upload_model_to_huggingface(model, model_name):
-    # Push the model to Hugging Face (you should have your repo already created on Hugging Face)
     model.push_to_hub(model_name)
     print(f"Model uploaded to Hugging Face under the name: {model_name}")
 
@@ -144,14 +142,7 @@ def check_and_update_huggingface(model, model_name):
         print(f"Model '{model_name}' created and uploaded.")
 
 # Main entry point to train and upload
-def main(custom_audio_files=None, custom_transcriptions=None):
+def start_training(custom_audio_files=None, custom_transcriptions=None):
     model = train_model(custom_audio_files, custom_transcriptions)
     check_and_update_huggingface(model, MODEL_NAME)
 
-if __name__ == "__main__":
-    # Example: Pass custom audio files and transcriptions
-    custom_audio_files = ["path/to/your/file1.wav", "path/to/your/file2.wav"]
-    custom_transcriptions = ["transcription 1", "transcription 2"]
-    
-    # If no custom data is provided, these can be left empty or None
-    main(custom_audio_files=custom_audio_files, custom_transcriptions=custom_transcriptions)
