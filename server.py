@@ -11,8 +11,17 @@ import os
 # Initialize Flask app
 app = Flask(__name__)
 
+
+device = "mps" if torch.backends.mps.is_available() else "cpu"
+print(f"Using device: {device} for Whisper model")
+
+device = "cpu"
+
 # Load models
+# whisper_model = whisper.load_model("medium").to(device)
 whisper_model = whisper.load_model("medium")
+whisper_model = whisper_model.to(device)  # Use CPU or MPS
+
 pipe = pipeline(
     "text-generation",
     model="meta-llama/Llama-3.2-1B-Instruct",
@@ -105,4 +114,4 @@ def process_audio():
     })
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port = 3000)
