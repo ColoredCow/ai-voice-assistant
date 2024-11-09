@@ -4,7 +4,7 @@ from transformers import WhisperProcessor, WhisperForConditionalGeneration, Seq2
 from huggingface_hub import HfApi, login
 import librosa
 from transformers import WhisperTokenizer
-from datasets import load_metric
+from evaluate import load as load_metric
 
 # Define the model name at the top-level
 MODEL_NAME = "./whisper_finetuned_marathi_paani"
@@ -146,3 +146,9 @@ def start_training(custom_audio_files=None, custom_transcriptions=None):
     model = train_model(custom_audio_files, custom_transcriptions)
     check_and_update_huggingface(model, MODEL_NAME)
 
+if __name__ == "__main__":
+    custom_audio_files = None 
+    custom_transcriptions = None
+
+    # Start training and uploading process
+    start_training(custom_audio_files, custom_transcriptions)

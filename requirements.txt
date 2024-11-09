@@ -5,6 +5,7 @@ cffi==1.17.1
 charset-normalizer==3.4.0
 click==8.1.7
 datasets==3.1.0
+evaluate==0.4.3
 filelock==3.16.1
 Flask==3.0.3
 fsspec==2024.10.0
