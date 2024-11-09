@@ -1,6 +1,10 @@
-env
+env/
+
+__pycache__/
 
 .DS_Store
 
 static/recordings/
 static/outputs/
+
+.env
