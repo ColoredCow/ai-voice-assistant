@@ -135,7 +135,7 @@ def record_audio_endpoint():
     # print(f"Transcription: {transcription}")
 
     # user_input = transcription
-    user_input = "how do you see india in future?"
+    user_input = "tell me about crop seasons in India"
     # user_input = "hello how are you?"
     # response = get_chatbot_response(user_input, selected_language)
     # response_text = response['content']
