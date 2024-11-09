@@ -14,22 +14,17 @@
     pip install -r requirements.txt
     ```
 3. Acquire a Hugging Face API token:
-   - Sign up at [huggingface.co](https://huggingface.co/) if you don’t already have an account.
+   - Sign up at [huggingface.co](https://huggingface.co/) if you don't already have an account.
    - Go to [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
    - Generate a new token (or use an existing one) and copy it.
-4. Install the Hugging Face Hub CLI:
+4. Set up your `.env` file
     ```sh
-    pip install huggingface-hub
+    cp .env.example .env
     ```
-5. Authenticate with Hugging Face (required for model access):
-    ```sh
-    huggingface-cli login
-    ```
-   - Paste the token when prompted.
-
+5. Set the hugging face token in the env file.
 6. Run the Flask application:
     ```sh
-    python server.py
+    flask --debug run
     ```
 
 7. Open the web server in your browser at [http://127.0.0.1:5000](http://127.0.0.1:5000)
