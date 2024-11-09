@@ -58,7 +58,7 @@ app = Flask(__name__)
 
 # model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
 
-# pipe = pipeline(model='sarvamai/shuka_v1', trust_remote_code=True, device=0, torch_dtype='bfloat16')
+pipe = pipeline(model='sarvamai/shuka_v1', trust_remote_code=True, device=0, torch_dtype='bfloat16')
 
 selected_language = 'hi'
 language_configs = {
@@ -160,41 +160,41 @@ def index():
         "audio_file_path": audio_file_path,
     })
 
-# @app.route('/process-audio', methods=['POST'])
-# def process_audio():
-#     print(f"Query start time: {get_current_time()}")
+@app.route('/process-audio', methods=['POST'])
+def process_audio():
+    print(f"Query start time: {get_current_time()}")
 
-#     if 'audio_data' not in request.files:
-#         return jsonify({"error": "No audio file uploaded"}), 400
+    if 'audio_data' not in request.files:
+        return jsonify({"error": "No audio file uploaded"}), 400
 
-#     audio_data = request.files['audio_data']
-#     audio_bytes = audio_data.read()
+    audio_data = request.files['audio_data']
+    audio_bytes = audio_data.read()
 
-#     RECORDING_SAVE_PATH = "static/recordings"
-#     os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
+    RECORDING_SAVE_PATH = "static/recordings"
+    os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
 
-#     audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
-#     with open(audio_filename, "wb") as f:
-#         f.write(audio_bytes)
+    audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
+    with open(audio_filename, "wb") as f:
+        f.write(audio_bytes)
 
-#     file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
+    file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
 
-#     audio, sr = librosa.load(file_name, sr=16000)
-#     turns = [
-#         {'role': 'system', 'content': 'Respond naturally and informatively.'},
-#         {'role': 'user', 'content': audio}
-#     ]
-#     outputs = pipe({'audio': audio, 'turns': turns, 'sampling_rate': sr}, max_new_tokens=512)
-#     print('outputs..................')
-#     print(outputs)
-#     response = outputs[0]["generated_text"][-1]
-#     response_text = response['content']
-#     print(f"Query end time: {get_current_time()}")
-#     return jsonify({
-#         "user_input": user_input,
-#         "response_text": response_text,
-#         # "audio_file_path": audio_file_path,
-#     })
+    audio, sr = librosa.load(file_name, sr=16000)
+    turns = [
+        {'role': 'system', 'content': 'Respond naturally and informatively.'},
+        {'role': 'user', 'content': audio}
+    ]
+    outputs = pipe({'audio': audio, 'turns': turns, 'sampling_rate': sr}, max_new_tokens=512)
+    print('outputs..................')
+    print(outputs)
+    response = outputs[0]["generated_text"][-1]
+    response_text = response['content']
+    print(f"Query end time: {get_current_time()}")
+    return jsonify({
+        "user_input": user_input,
+        "response_text": response_text,
+        # "audio_file_path": audio_file_path,
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
