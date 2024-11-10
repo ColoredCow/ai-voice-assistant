@@ -1,5 +1,5 @@
 import os
-from datasets import load_dataset, Dataset, DatasetDict
+from datasets import load_dataset, Dataset, DatasetDict, concatenate_datasets
 from transformers import WhisperProcessor, WhisperForConditionalGeneration, Seq2SeqTrainer, Seq2SeqTrainingArguments
 from huggingface_hub import HfApi, login
 import librosa
@@ -44,7 +44,7 @@ def load_and_preprocess_data(custom_audio_files=None, custom_transcriptions=None
 
     # Combine datasets (ensure the data is formatted properly)
     full_dataset = DatasetDict({
-        'train': common_voice['train'].concatenate(custom_audio_data),
+        'train': concatenate_datasets([common_voice['train'], custom_audio_data]),
         'validation': common_voice['validation']
     })
 
@@ -52,8 +52,13 @@ def load_and_preprocess_data(custom_audio_files=None, custom_transcriptions=None
     processor = WhisperProcessor.from_pretrained("openai/whisper-medium")
 
     def preprocess(batch):
-        audio_array, sampling_rate = librosa.load(batch["audio"], sr=16000)
-        batch["input_features"] = processor(audio_array, sampling_rate=sampling_rate, return_tensors="pt").input_features[0]
+        # audio_array, sampling_rate = librosa.load(batch["audio"], sr=16000)
+        audio_array = batch["audio"]["array"]
+        original_sampling_rate = batch["audio"]["sampling_rate"]
+        if original_sampling_rate != 16000:
+            audio_array = librosa.resample(audio_array, orig_sr=original_sampling_rate, target_sr=16000)
+
+        batch["input_features"] = processor(audio_array, sampling_rate=16000, return_tensors="pt").input_features[0]
         return batch
 
     # Apply preprocessing
