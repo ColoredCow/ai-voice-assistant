@@ -15,6 +15,7 @@ idna==3.10
 inquirerpy==0.3.4
 itsdangerous==2.2.0
 Jinja2==3.1.4
+jiwer==3.0.5
 librosa==0.10.2.post1
 llvmlite==0.43.0
 MarkupSafe==3.0.2

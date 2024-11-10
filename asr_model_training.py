@@ -86,12 +86,13 @@ def train_model(custom_audio_files=None, custom_transcriptions=None):
         per_device_eval_batch_size=4,
         gradient_accumulation_steps=2,
         evaluation_strategy="epoch",
+        save_strategy="epoch",
         learning_rate=1e-5,
         warmup_steps=500,
         save_steps=1000,
         logging_dir='./logs',
         num_train_epochs=3,
-        fp16=True,  # Mixed precision training for speed
+        fp16=False,  # Mixed precision training for speed ## this can be true with GPU only
         load_best_model_at_end=True,
         metric_for_best_model="wer",
     )
