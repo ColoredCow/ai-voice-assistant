@@ -80,7 +80,7 @@ class FineTuneLlama:
 
 
 if __name__ == "__main__":
-    model_name = "mlx-community/Llama-3.2-3B-Instruct-4bit"
+    model_name = "meta-llama/Llama-3.2-1B-Instruct"
     file_path = "data/training_data.json"
     output_dir = "./fine_tuned_model"
 
