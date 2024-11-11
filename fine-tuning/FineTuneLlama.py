@@ -69,12 +69,13 @@ class FineTuneLlama:
             output_dir=str(self.output_dir),  # Convert Path to string
             eval_strategy="no",
             learning_rate=2e-5,
-            per_device_train_batch_size=8,
-            per_device_eval_batch_size=8,
+            per_device_train_batch_size=4,
+            per_device_eval_batch_size=4,
             num_train_epochs=self.num_epochs,
             weight_decay=0.01,
             logging_dir=str(base_dir / 'logs'),
             logging_steps=10,
+            fp16=True,
         )
         print('training args configured....')
         self.trainer = Trainer(
