@@ -129,7 +129,7 @@ if __name__ == "__main__":
     # Free up unused GPU memory
     torch.cuda.empty_cache()
     model_name = "meta-llama/Llama-3.2-1B-Instruct"
-    file_path = "data/training_data.json"
+    file_path = "data/training_data_1.json"
     output_dir = "./fine_tuned_model"
 
     os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
