@@ -32,6 +32,33 @@ class FineTuneLlama:
         # Prepare model, tokenizer, dataset, and training arguments
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         print('tokenizer initialized....')
+
+        # # Load the training data
+        # file_path = self.file_path
+        # with open(file_path, 'r', encoding='utf-8') as f:
+        #     training_data = json.load(f)
+
+
+        # # Calculate token lengths for inputs and outputs
+        # input_lengths = [len(self.tokenizer.encode(entry["input"], truncation=False)) for entry in training_data]
+        # output_lengths = [len(self.tokenizer.encode(entry["output"], truncation=False)) for entry in training_data]
+
+        # # Summary statistics
+        # input_length_summary = {
+        #     "max_input_length": max(input_lengths),
+        #     "average_input_length": sum(input_lengths) / len(input_lengths),
+        #     "min_input_length": min(input_lengths)
+        # }
+
+        # output_length_summary = {
+        #     "max_output_length": max(output_lengths),
+        #     "average_output_length": sum(output_lengths) / len(output_lengths),
+        #     "min_output_length": min(output_lengths)
+        # }
+
+        # print("Input length summary:", input_length_summary)
+        # print("Output length summary:", output_length_summary)
+
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
         print('model initialized....')
@@ -70,10 +97,9 @@ class FineTuneLlama:
         )
 
         def tokenize_function(examples):
-            input_encodings = self.tokenizer(
-                examples["input"], padding="longest", truncation=True, return_tensors="pt")
-            output_encodings = self.tokenizer(
-                examples["output"], padding="longest", truncation=True, return_tensors="pt")
+            max_length=350
+            input_encodings = self.tokenizer(examples["input"], padding="max_length", truncation=True, max_length=max_length, return_tensors="pt")
+            output_encodings = self.tokenizer(examples["output"], padding="max_length", truncation=True, max_length=max_length, return_tensors="pt")
              # Print shapes for debugging
             print("input_ids shape:", input_encodings['input_ids'].shape)
             print("labels shape:", output_encodings['input_ids'].shape)
