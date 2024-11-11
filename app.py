@@ -2,15 +2,18 @@ from flask import Flask, jsonify, render_template, request, url_for
 # import sounddevice as sd
 # import scipy.io.wavfile
 # import whisper
-import torch
-from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from gtts import gTTS
 import os
 from datetime import datetime
-from dotenv import load_dotenv
+import librosa
+
+import torch
+import whisper
+from transformers import WhisperProcessor, WhisperForConditionalGeneration
+from dotenv import load_dotenv # type: ignore
 import os
 from huggingface_hub import login
-from mlx_lm import load, generate
+from mlx_lm import load, generate # type: ignore
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -19,51 +22,31 @@ load_dotenv()
 huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
 login(token=huggingface_token)
 
-def get_current_time():
-    """Get the current time"""
-    current_time = datetime.now()
-    formatted_time = current_time.strftime("%H:%M:%S")
-    return formatted_time
-
 # Initialize Flask app
 app = Flask(__name__)
 
+MODEL_NAME = "your-username/whisper_finetuned_marathi" 
+
+# Load the Whisper model and processor from Hugging Face
+def load_finetuned_model():
+    processor = WhisperProcessor.from_pretrained(MODEL_NAME)
+    model = WhisperForConditionalGeneration.from_pretrained(MODEL_NAME)
+    return processor, model
+
 # # Load Whisper model
-# whisper_model = whisper.load_model("base")
-
-# # meta-llama/Llama-3.2-1B-Instruct
-# model_id = "meta-llama/Llama-3.2-1B-Instruct"
-# pipe = pipeline(
-#     "text-generation",
-#     model=model_id,
-#     torch_dtype=torch.bfloat16,
-#     device_map="auto",
-# )
-
-# bnb_config = BitsAndBytesConfig(
-#     load_in_4bit=True,
-# )
-
-# # Load tokenizer
-# tokenizer = AutoTokenizer.from_pretrained(model_id)
-
-# # Load the model with 4-bit quantization
-# model = AutoModelForCausalLM.from_pretrained(
-#     model_id,
-#     quantization_config=bnb_config,
-#     device_map="auto",
-#     torch_dtype=torch.float16,  # Setting this helps with speed and memory
-# )
+# whisper_model = whisper.load_model("medium")
+processor, model = load_finetuned_model()
 
 model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
 
 selected_language = 'hi'
+
 language_configs = {
     "en": {
         "chatbot_instruction": "Please answer the following question in English:\n",
     },
     "hi": {
-        "chatbot_instruction": "कृपया निम्नलिखित प्रश्न का उत्तर हिंदी में दें:\n",
+        "chatbot_instruction": "कृपया निम्नलिखित प्रश्न का उत्तर हिंदी में दें और हाइलाइट्स के लिए विशेष कीवर्ड जैसे * बोल्ड आदि से बचें:\n",
     },
     "mr": {
         "chatbot_instruction": "कृपया पुढील प्रश्नाचे उत्तर मराठीत द्या:\n",
@@ -73,18 +56,39 @@ language_configs = {
     },
 }
 
-# # Record audio function
-# def record_audio(duration=5, sample_rate=44100):
-#     """Record audio for the specified duration."""
-#     print(f"Recording for {duration} seconds...")
-#     audio_data = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1, dtype="int16")
-#     sd.wait()  # Wait until the recording is finished
-#     return audio_data, sample_rate
+OUTPUT_SAVE_PATH = "static/outputs"
 
-# # Save audio file
-# def save_audio(file_name, audio_data, sample_rate):
-#     """Save recorded audio to a file."""
-#     scipy.io.wavfile.write(file_name, sample_rate, audio_data)
+
+def get_current_time():
+    """Get the current time"""
+    current_time = datetime.now()
+    formatted_time = current_time.strftime("%H:%M:%S")
+    return formatted_time
+
+def timestamped_print(*args, **kwargs):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print("\n\n")
+    print( f"[{timestamp}]", *args, **kwargs)
+    print("\n\n")
+
+
+def save_audio(files):
+    if 'audio_data' not in files:
+        return jsonify({"error": "No audio file uploaded"}), 400
+
+    audio_data = request.files['audio_data']
+    audio_bytes = audio_data.read()
+
+    RECORDING_SAVE_PATH = "static/recordings"
+    os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
+
+    audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
+    with open(audio_filename, "wb") as f:
+        f.write(audio_bytes)
+
+    file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
+
+    return file_name
 
 def get_chatbot_response(input_text, language):
     instruction = language_configs[language]['chatbot_instruction']
@@ -100,8 +104,34 @@ def get_chatbot_response(input_text, language):
         )
 
     response = generate(model, tokenizer, prompt=prompt, verbose=True)
-    return response
 
+    print("response generated", response)
+    return {"content": response}
+
+
+def transcribe_audio(file_path, language):
+    # result = whisper_model.transcribe(file_path, task="translate", language=language)
+    # return result.get("text", "")
+    # Load the audio file using librosa
+    audio_array, sampling_rate = librosa.load(file_path, sr=16000)
+
+    # Preprocess audio with WhisperProcessor
+    inputs = processor(audio_array, sampling_rate=sampling_rate, return_tensors="pt")
+    input_features = inputs.input_features
+
+    # Generate transcription using the fine-tuned model
+    with torch.no_grad():
+        logits = model(input_features).logits
+        transcription = processor.decode(logits[0], skip_special_tokens=True)
+
+    return transcription
+
+def convert_to_audio(text, language):
+    os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
+    tts = gTTS(text=text, lang=language, tld='co.in')
+    tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
+    audio_file_path = url_for('static', filename='outputs/final-output.mp3')
+    return audio_file_path
 
 # Route to render the HTML page with the recording UI
 @app.route('/')
@@ -114,45 +144,27 @@ def record_audio_endpoint():
     # Print current time
     print(f"Query start time: {get_current_time()}")
 
-    # if 'audio_data' not in request.files:
-    #     return jsonify({"error": "No audio file uploaded"}), 400
+    file_name = save_audio(request.files)
+    timestamped_print("Audio file saved")
 
-    # audio_data = request.files['audio_data']
-    # audio_bytes = audio_data.read()
+    transcription = transcribe_audio(file_name, selected_language)
+    timestamped_print("Audio transcribed", transcription)
 
-    # RECORDING_SAVE_PATH = "static/recordings"
-    # os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
 
-    # audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
-    # with open(audio_filename, "wb") as f:
-    #     f.write(audio_bytes)
+    response = get_chatbot_response(transcription, selected_language)
+    response_text = response['content']
+    timestamped_print("Answer generated", response_text)
 
-    # file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
 
-    # # Transcribe using Whisper
-    # result = whisper_model.transcribe(file_name, task="translate")
-    # transcription = result['text']
-    # print(f"Transcription: {transcription}")
+    audio_file_path = convert_to_audio(response_text, selected_language)
+    timestamped_print("converted in audio", audio_file_path)
 
-    # user_input = transcription
-    user_input = "tell me about crop seasons in India"
-    # user_input = "hello how are you?"
-    # response = get_chatbot_response(user_input, selected_language)
-    # response_text = response['content']
-    response_text = get_chatbot_response(user_input, selected_language)
-
-    OUTPUT_SAVE_PATH = "static/outputs"
-    os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
-    tts = gTTS(text=response_text, lang=selected_language, tld='co.in')
-    tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
-
-    audio_file_path = url_for('static', filename='outputs/final-output.mp3')
 
     # Print current time
     print(f"Query end time: {get_current_time()}")
 
     return jsonify({
-        "user_input": user_input,
+        "user_input": transcription,
         "response_text": response_text,
         "audio_file_path": audio_file_path,
     })

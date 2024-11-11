@@ -4,6 +4,8 @@ certifi==2024.8.30
 cffi==1.17.1
 charset-normalizer==3.4.0
 click==8.1.7
+datasets==3.1.0
+evaluate==0.4.3
 filelock==3.16.1
 Flask==3.0.3
 fsspec==2024.10.0
@@ -13,6 +15,8 @@ idna==3.10
 inquirerpy==0.3.4
 itsdangerous==2.2.0
 Jinja2==3.1.4
+jiwer==3.0.5
+librosa==0.10.2.post1
 llvmlite==0.43.0
 MarkupSafe==3.0.2
 mlx==0.20.0
