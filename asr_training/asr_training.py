@@ -169,20 +169,6 @@ def upload_model_to_huggingface(model):
     model.push_to_hub(MODEL_NAME)
     print(f"Model uploaded to Hugging Face under the name: {MODEL_NAME}")
 
-def check_and_update_huggingface(model, model_name):
-    api = HfApi()
-    try:
-        # Check if the model already exists on Hugging Face
-        repo_info = api.repo_info(model_name)
-        print(f"Model '{model_name}' already exists on Hugging Face. Updating...")
-        model.push_to_hub(model_name, private=True)
-        print(f"Model '{model_name}' updated.")
-    except Exception as e:
-        # If the model does not exist, create a new repo and upload it
-        print(f"Model '{model_name}' does not exist. Creating new repo...")
-        api.create_repo(model_name, private=True)
-        model.push_to_hub(model_name, private=True)
-        print(f"Model '{model_name}' created and uploaded.")
 
 if __name__ == "__main__":
     train_and_save_model()
