@@ -105,7 +105,7 @@ class FineTuneLlama:
             max_length=350
             input_encodings = self.tokenizer(examples["input"], padding="max_length", truncation=True, max_length=max_length, return_tensors="pt")
             output_encodings = self.tokenizer(examples["output"], padding="max_length", truncation=True, max_length=max_length, return_tensors="pt")
-             # Print shapes for debugging
+            # Print shapes for debugging
             print("input_ids shape:", input_encodings['input_ids'].shape)
             print("labels shape:", output_encodings['input_ids'].shape)
             return {'input_ids': input_encodings['input_ids'], 'labels': output_encodings['input_ids']}
