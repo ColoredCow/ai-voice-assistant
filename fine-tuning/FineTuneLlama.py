@@ -40,7 +40,7 @@ class FineTuneLlama:
         print(self.train_dataset)
         self.training_args = TrainingArguments(
             output_dir=str(self.output_dir),  # Convert Path to string
-            evaluation_strategy="epoch",
+            eval_strategy="no",
             learning_rate=2e-5,
             per_device_train_batch_size=8,
             per_device_eval_batch_size=8,
@@ -71,9 +71,12 @@ class FineTuneLlama:
 
         def tokenize_function(examples):
             input_encodings = self.tokenizer(
-                examples["input"], padding=True, truncation=True, return_tensors="pt")
+                examples["input"], padding="longest", truncation=True, return_tensors="pt")
             output_encodings = self.tokenizer(
-                examples["output"], padding=True, truncation=True, return_tensors="pt")
+                examples["output"], padding="longest", truncation=True, return_tensors="pt")
+             # Print shapes for debugging
+            print("input_ids shape:", input_encodings['input_ids'].shape)
+            print("labels shape:", output_encodings['input_ids'].shape)
             return {'input_ids': input_encodings['input_ids'], 'labels': output_encodings['input_ids']}
 
         return train_dataset.map(tokenize_function, batched=True)
