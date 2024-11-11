@@ -67,7 +67,7 @@ class FineTuneLlama:
         self.training_args = TrainingArguments(
             output_dir=str(self.output_dir),  # Convert Path to string
             eval_strategy="no",
-            learning_rate=2e-5,
+            learning_rate=1e-5,
             per_device_train_batch_size=1,
             per_device_eval_batch_size=1,
             gradient_accumulation_steps=2,
