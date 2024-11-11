@@ -27,11 +27,16 @@ class FineTuneLlama:
         # Initialize attributes
         self.model_name = model_name
         self.num_epochs = num_epochs
+        print('all attributes initialized....')
 
         # Prepare model, tokenizer, dataset, and training arguments
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        print('tokenizer initialized....')
         self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+        print('model initialized....')
         self.train_dataset = self.prepare_dataset(self.file_path)
+        print('dataset loaded....')
+        print(self.train_dataset)
         self.training_args = TrainingArguments(
             output_dir=str(self.output_dir),  # Convert Path to string
             evaluation_strategy="epoch",
@@ -43,12 +48,14 @@ class FineTuneLlama:
             logging_dir=str(base_dir / 'logs'),
             logging_steps=10,
         )
+        print('training args configured....')
         self.trainer = Trainer(
             model=self.model,
             args=self.training_args,
             train_dataset=self.train_dataset,
             tokenizer=self.tokenizer
         )
+        print('trainer initialized....')
 
     def load_data(self, file_path: Path) -> List[str]:
         with open(file_path, 'r', encoding='utf-8') as file:
