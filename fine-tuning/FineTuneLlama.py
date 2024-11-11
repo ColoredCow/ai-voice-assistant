@@ -2,11 +2,10 @@ import json
 import json
 # import os
 from pathlib import Path
-# import torch
+import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
 from datasets import Dataset
 from typing import List, Optional
-
 
 class FineTuneLlama:
     def __init__(self, model_name: str, file_path: str = "data/training_data.json", output_dir: str = "./results", num_epochs: int = 3):
@@ -118,6 +117,8 @@ class FineTuneLlama:
 
 
 if __name__ == "__main__":
+    # Free up unused GPU memory
+    torch.cuda.empty_cache()
     model_name = "meta-llama/Llama-3.2-1B-Instruct"
     file_path = "data/training_data.json"
     output_dir = "./fine_tuned_model"
