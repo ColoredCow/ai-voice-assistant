@@ -111,7 +111,10 @@ class FineTuneLlama:
             return {'input_ids': input_encodings['input_ids'], 'labels': output_encodings['input_ids']}
 
         print('before train dataset return.....')
-        return train_dataset.map(tokenize_function, batched=True)
+        try:
+            return train_dataset.map(tokenize_function, batched=True)
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     def start_training(self):
         print("Starting training...")
