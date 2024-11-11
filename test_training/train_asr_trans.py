@@ -64,7 +64,7 @@ def load_model_for_translation():
     model.generation_config.language = "marathi"
     model.generation_config.task = "translate"
     model.config.gradient_checkpointing = True
-    model.generation_config.forced_decoder_ids = None
+    # model.generation_config.forced_decoder_ids = None
     return model
 
 # Data Collator for translation task
@@ -88,21 +88,22 @@ class DataCollatorSpeechSeq2SeqWithPadding:
         return batch
 
 # Compute metrics for evaluation (using BLEU or other translation metrics)
-def compute_metrics(pred):
+def compute_metrics(pred, tokenizer):
     pred_ids = pred.predictions
     label_ids = pred.label_ids
 
-    label_ids[label_ids == -100] = pred.tokenizer.pad_token_id
-    pred_str = pred.tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
-    label_str = pred.tokenizer.batch_decode(label_ids, skip_special_tokens=True)
+    label_ids[label_ids == -100] = tokenizer.pad_token_id
+    pred_str = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+    label_str = tokenizer.batch_decode(label_ids, skip_special_tokens=True)
 
     # Use BLEU for translation evaluation
     bleu = evaluate.load("bleu")
     bleu_score = bleu.compute(predictions=pred_str, references=label_str)
     return bleu_score
 
+
 # Set up the trainer with all necessary arguments and configurations
-def setup_trainer_for_translation(dataset, model, processor):
+def setup_trainer_for_translation(dataset, model, processor, tokenizer):
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(
         processor=processor,
         decoder_start_token_id=model.config.decoder_start_token_id,
@@ -137,7 +138,7 @@ def setup_trainer_for_translation(dataset, model, processor):
         train_dataset=dataset,
         eval_dataset=dataset,  # You can split your dataset into train and eval if needed
         data_collator=data_collator,
-        compute_metrics=compute_metrics,
+        compute_metrics=lambda pred: compute_metrics(pred, tokenizer),
         tokenizer=processor.feature_extractor,
     )
     return trainer
@@ -159,7 +160,7 @@ def train_and_save_translation_model():
     model = load_model_for_translation()
 
     # Set up trainer
-    trainer = setup_trainer_for_translation(dataset, model, processor)
+    trainer = setup_trainer_for_translation(dataset, model, processor, tokenizer)
 
     # Start training
     trainer.train()
