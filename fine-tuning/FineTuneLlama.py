@@ -1,6 +1,6 @@
 import json
 import json
-# import os
+import os
 from pathlib import Path
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
@@ -70,6 +70,7 @@ class FineTuneLlama:
             learning_rate=2e-5,
             per_device_train_batch_size=1,
             per_device_eval_batch_size=1,
+            # gradient_accumulation_steps=4,
             num_train_epochs=self.num_epochs,
             weight_decay=0.01,
             logging_dir=str(base_dir / 'logs'),
@@ -122,6 +123,8 @@ if __name__ == "__main__":
     model_name = "meta-llama/Llama-3.2-1B-Instruct"
     file_path = "data/training_data.json"
     output_dir = "./fine_tuned_model"
+
+    os.environ["PYTORCH_MPS_HIGH_WATERMARK_RATIO"] = "0.0"
 
     fine_tune_model = FineTuneLlama(model_name, file_path, output_dir)
     fine_tune_model.start_training()
