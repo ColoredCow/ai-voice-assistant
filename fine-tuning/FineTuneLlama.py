@@ -91,13 +91,17 @@ class FineTuneLlama:
             return json.load(file)
 
     def prepare_dataset(self, file_path: Path) -> Dataset:
+        print('before train data.....')
         train_data = self.load_data(file_path)
+        print('after train data.....')
         train_dataset = Dataset.from_dict(
             {"input": [entry["input"] for entry in train_data],
              "output": [entry["output"] for entry in train_data]}
         )
+        print('after train dataset.....')
 
         def tokenize_function(examples):
+            print('inside tokenize_function.....')
             max_length=350
             input_encodings = self.tokenizer(examples["input"], padding="max_length", truncation=True, max_length=max_length, return_tensors="pt")
             output_encodings = self.tokenizer(examples["output"], padding="max_length", truncation=True, max_length=max_length, return_tensors="pt")
@@ -106,6 +110,7 @@ class FineTuneLlama:
             print("labels shape:", output_encodings['input_ids'].shape)
             return {'input_ids': input_encodings['input_ids'], 'labels': output_encodings['input_ids']}
 
+        print('before train dataset return.....')
         return train_dataset.map(tokenize_function, batched=True)
 
     def start_training(self):
