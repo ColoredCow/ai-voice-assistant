@@ -32,6 +32,7 @@ class FineTuneLlama:
         # Prepare model, tokenizer, dataset, and training arguments
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         print('tokenizer initialized....')
+        self.tokenizer.pad_token = self.tokenizer.eos_token
         self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
         print('model initialized....')
         self.train_dataset = self.prepare_dataset(self.file_path)
