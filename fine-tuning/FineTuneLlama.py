@@ -70,7 +70,7 @@ class FineTuneLlama:
             learning_rate=2e-5,
             per_device_train_batch_size=1,
             per_device_eval_batch_size=1,
-            gradient_accumulation_steps=4,
+            gradient_accumulation_steps=2,
             num_train_epochs=self.num_epochs,
             weight_decay=0.01,
             logging_dir=str(base_dir / 'logs'),
