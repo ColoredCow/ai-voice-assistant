@@ -1,0 +1,13 @@
+./custom_data/
+  ├── train/
+  │    ├── audio_file_1.wav
+  │    ├── audio_file_2.wav
+  │    └── ...
+  ├── test/
+  │    ├── audio_file_1.wav
+  │    ├── audio_file_2.wav
+  │    └── ...
+  └── transcriptions/
+       ├── audio_file_1.txt
+       ├── audio_file_2.txt
+       └── ...

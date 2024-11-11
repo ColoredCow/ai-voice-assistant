@@ -1,5 +1,5 @@
 import os
-from datasets import load_dataset, DatasetDict, Audio
+from datasets import load_dataset, DatasetDict, Audio, Dataset
 from transformers import WhisperFeatureExtractor, WhisperProcessor, WhisperForConditionalGeneration, Seq2SeqTrainingArguments, Seq2SeqTrainer, WhisperTokenizer
 from huggingface_hub import login
 from huggingface_hub import HfApi
@@ -14,6 +14,43 @@ MODEL_NAME = "./whisper-small-mr-finetuned-marathi"
 # Hugging Face login using your token (set this in the environment variable 'HUGGINGFACE_TOKEN')
 huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
 login(token=huggingface_token)
+
+
+def load_custom_dataset_function():
+    """
+    Loads the custom dataset and prepares it for preprocessing.
+    :return: Loaded custom dataset
+    """
+    print("Loading custom dataset...")
+    custom_data = DatasetDict()
+
+    # Load the training data
+    train_audio_files = [os.path.join("./custom_data/train", f) for f in os.listdir("./custom_data/train")]
+    train_transcriptions = [os.path.join("./custom_data/transcriptions", f.replace(".wav", ".txt")) for f in os.listdir("./custom_data/train")]
+
+    train_data = {
+        "audio": train_audio_files,
+        "sentence": [open(txt_file, "r").read().strip() for txt_file in train_transcriptions],
+    }
+
+    custom_data["train"] = Dataset.from_dict(train_data)
+
+    # Load the test data (similar to train data structure)
+    test_audio_files = [os.path.join("./custom_data/test", f) for f in os.listdir("./custom_data/test")]
+    test_transcriptions = [os.path.join("./custom_data/transcriptions", f.replace(".wav", ".txt")) for f in os.listdir("./custom_data/test")]
+
+    test_data = {
+        "audio": test_audio_files,
+        "sentence": [open(txt_file, "r").read().strip() for txt_file in test_transcriptions],
+    }
+
+    custom_data["test"] = Dataset.from_dict(test_data)
+
+    # Cast the audio column to Audio format with 16kHz sampling rate
+    custom_data = custom_data.cast_column("audio", Audio(sampling_rate=16000))
+
+    print("Custom dataset loaded.")
+    return custom_data
 
 # Load dataset function
 def load_dataset_function():
@@ -36,7 +73,7 @@ def load_dataset_function():
 # Preprocess dataset function
 def preprocess_data(common_voice, feature_extractor, tokenizer):
     """
-    Preprocesses the dataset by converting audio and text into input features.
+    Pre processes the dataset by converting audio and text into input features.
     :param common_voice: The loaded dataset
     :param feature_extractor: WhisperFeatureExtractor to process audio
     :param tokenizer: WhisperTokenizer to process text

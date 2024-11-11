@@ -8,7 +8,6 @@ from datetime import datetime
 import librosa
 
 import torch
-import whisper
 from transformers import WhisperProcessor, WhisperForConditionalGeneration
 from dotenv import load_dotenv # type: ignore
 import os
@@ -34,12 +33,11 @@ def load_finetuned_model():
     return processor, model
 
 # # Load Whisper model
-# whisper_model = whisper.load_model("medium")
 processor, whisper_model = load_finetuned_model()
 
 model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
 
-selected_language = 'hi'
+selected_language = 'mr'
 
 language_configs = {
     "en": {
@@ -100,7 +98,8 @@ def transcribe_audio(file_path, language):
 
     # Generate transcription using the fine-tuned model
     with torch.no_grad():
-        generated_tokens = whisper_model.generate(input_features)
+        # generated_tokens = whisper_model.generate(input_features)
+        generated_tokens = whisper_model.generate(input_features, forced_decoder_ids=processor.get_decoder_prompt_ids(language="Marathi", task="translate"))
         transcription = processor.decode(generated_tokens[0], skip_special_tokens=True)
 
     return transcription
