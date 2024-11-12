@@ -1,4 +1,4 @@
-name: Production Deployment
+name: Deployment
 on:
   push:
     branches: [main, feature/cd]
@@ -10,7 +10,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Deploy to production
+    - name: Deploy
       uses: appleboy/ssh-action@master
       env:
         SSH_BUILD_DIRECTORY: ${{ secrets.SSH_BUILD_DIRECTORY }}
