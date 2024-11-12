@@ -101,6 +101,7 @@ def get_chatbot_response(input_text, language):
         outputs = pipe(
             messages,
             max_new_tokens=256,
+            do_sample=False,
         )
         response = outputs[0]["generated_text"][-1]
         print("response from model......", response)
