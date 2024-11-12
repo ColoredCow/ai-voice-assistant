@@ -12,7 +12,6 @@ def load_asr_model(modelName):
     model = WhisperForConditionalGeneration.from_pretrained(modelName)
     return processor, model
 
-
 def transcribe_audio(file_path, model, processor, language):
     # Load the audio file using librosa
     audio_array, sampling_rate = librosa.load(file_path, sr=16000)
@@ -43,14 +42,14 @@ def translate_audio(file_path, model, processor, language):
 
     return transcription
 
-def translate_with_whisper(file_path, model, processor, language):
+def translate_with_base_whisper(file_path, model, processor, language):
     # Transcribe using Whisper
     result = whisper_model.transcribe(file_path, task="translate", language = language)
     transcription = result['text']
     print(f"Transcription: {transcription}")
     return transcription
 
-def transcribe_with_whisper(file_path, model, processor, language):
+def transcribe_with_base_whisper(file_path, model, processor, language):
     # Transcribe using Whisper
     result = whisper_model.transcribe(file_path, task="transcribe", language = language)
     transcription = result['text']
