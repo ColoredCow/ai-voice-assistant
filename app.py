@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request, url_for
 # import sounddevice as sd
 # import scipy.io.wavfile
-# import whisper
+import whisper
 import torch
 from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from gtts import gTTS
@@ -28,8 +28,8 @@ def get_current_time():
 # Initialize Flask app
 app = Flask(__name__)
 
-# # Load Whisper model
-# whisper_model = whisper.load_model("base")
+# Load Whisper model
+whisper_model = whisper.load_model("base")
 
 # model_id = "meta-llama/Llama-3.2-1B-Instruct"
 # model_id = "pankaj-ag/fine_tuned_model"
@@ -126,33 +126,33 @@ def index():
     return render_template('record.html')
 
 # Flask route to record and transcribe audio
-@app.route('/process-audio', methods=['GET'])
+@app.route('/process-audio', methods=['POST'])
 def record_audio_endpoint():
     # Print current time
     print(f"Query start time: {get_current_time()}")
 
-    # if 'audio_data' not in request.files:
-    #     return jsonify({"error": "No audio file uploaded"}), 400
+    if 'audio_data' not in request.files:
+        return jsonify({"error": "No audio file uploaded"}), 400
 
-    # audio_data = request.files['audio_data']
-    # audio_bytes = audio_data.read()
+    audio_data = request.files['audio_data']
+    audio_bytes = audio_data.read()
 
-    # RECORDING_SAVE_PATH = "static/recordings"
-    # os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
+    RECORDING_SAVE_PATH = "static/recordings"
+    os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
 
-    # audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
-    # with open(audio_filename, "wb") as f:
-    #     f.write(audio_bytes)
+    audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
+    with open(audio_filename, "wb") as f:
+        f.write(audio_bytes)
 
-    # file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
+    file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
 
-    # # Transcribe using Whisper
-    # result = whisper_model.transcribe(file_name, task="translate")
-    # transcription = result['text']
-    # print(f"Transcription: {transcription}")
+    # Transcribe using Whisper
+    result = whisper_model.transcribe(file_name, task="translate")
+    transcription = result['text']
+    print(f"Transcription: {transcription}")
 
-    # user_input = transcription
-    user_input = "tell me about crop seasons in India"
+    user_input = transcription
+    # user_input = "tell me about crop seasons in India"
     # user_input = "hello how are you?"
     # response = get_chatbot_response(user_input, selected_language)
     # response_text = response['content']
