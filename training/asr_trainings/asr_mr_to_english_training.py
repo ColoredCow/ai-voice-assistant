@@ -7,9 +7,16 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 import pandas as pd
 import evaluate
+from dotenv import load_dotenv
 
-# Define the model name at the top-level
-MODEL_NAME = "./whisper-small-mr-en-translation"
+load_dotenv()
+
+current_path = os.path.abspath(__file__)
+project_root = current_path[:current_path.index("ai-voice-assistant") + len("ai-voice-assistant")]
+
+MODEL_NAME = os.path.join(project_root, "training", "models", "whisper-small-mr-en-translation-2")
+
+DATA_PATH = os.path.join(project_root, "training", "data")
 
 # Function to load the CSV dataset
 def load_translation_dataset():
@@ -19,10 +26,10 @@ def load_translation_dataset():
     """
     print("Loading translation dataset...")
     # Load the CSV file
-    df = pd.read_csv("./data/marathi_to_english.csv")
+    df = pd.read_csv(os.path.join(DATA_PATH, "marathi_to_english.csv"))
     
     # Prepare the dataset
-    audio_files = [os.path.join("./data/audio", f) for f in df["audio_file"]]
+    audio_files = [os.path.join(DATA_PATH, "audio", f) for f in df["audio_file"]]
     marathi_sentences = df["marathi_sentence"].tolist()
     english_translations = df["english_translation"].tolist()
 
