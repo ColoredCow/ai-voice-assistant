@@ -1,0 +1,33 @@
+name: Production Deployment
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy to production
+      uses: appleboy/ssh-action@master
+      env:
+        SSH_BUILD_DIRECTORY: ${{ secrets.SSH_BUILD_DIRECTORY }}
+        SSH_POST_BUILD_SCRIPT: post_build_script.sh
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        envs: SSH_BUILD_DIRECTORY,SSH_POST_BUILD_SCRIPT
+        script: |
+          cd $SSH_BUILD_DIRECTORY
+
+          echo "Pulling latest code"
+          git checkout -f
+          git pull origin main
+
+          echo "Restarting services"
+          sudo systemctl daemon-reload
+          sudo systemctl restart ai-voice-assistant
+          sudo systemctl restart nginx
