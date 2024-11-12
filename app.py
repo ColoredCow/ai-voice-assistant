@@ -1,5 +1,4 @@
 from flask import Flask, jsonify, render_template, request, url_for
-import whisper
 import torch
 from transformers import pipeline
 from gtts import gTTS
@@ -8,7 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 from huggingface_hub import login
-# from mlx_lm import load, generate
+from transcription import load_asr_model, translate_audio
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -16,6 +15,13 @@ load_dotenv()
 # login to huggingface
 huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
 login(token=huggingface_token)
+
+RECORDING_SAVE_PATH = "static/recordings"
+OUTPUT_SAVE_PATH = "static/outputs"
+ASR_MODEL_NAME = 'pankaj-ag/whisper-small-mr-en-translation'
+
+processor, asr_model = load_asr_model(ASR_MODEL_NAME)
+
 
 def get_current_time():
     """Get the current time"""
@@ -27,7 +33,6 @@ def get_current_time():
 app = Flask(__name__)
 
 # Load Whisper model
-whisper_model = whisper.load_model("base")
 
 model_id = "coloredcow/paani-1b-instruct-marathi"
 
@@ -77,6 +82,34 @@ def get_chatbot_response(input_text, language):
     
     return None
 
+def timestamped_print(*args, **kwargs):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print("\n\n")
+    print( f"[{timestamp}]", *args, **kwargs)
+    print("\n\n")
+
+def save_audio(files):
+    if 'audio_data' not in files:
+        return jsonify({"error": "No audio file uploaded"}), 400
+
+    audio_data = request.files['audio_data']
+    audio_bytes = audio_data.read()
+    os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
+
+    audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
+    with open(audio_filename, "wb") as f:
+        f.write(audio_bytes)
+
+    file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
+
+    return file_name
+
+def convert_to_audio(text, language):
+    os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
+    tts = gTTS(text=text, lang=language, tld='co.in')
+    tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
+    audio_file_path = url_for('static', filename='outputs/final-output.mp3')
+    return audio_file_path
 
 # Route to render the HTML page with the recording UI
 @app.route('/')
@@ -89,41 +122,24 @@ def record_audio_endpoint():
     # Print current time
     print(f"Query start time: {get_current_time()}")
 
-    if 'audio_data' not in request.files:
-        return jsonify({"error": "No audio file uploaded"}), 400
+    file_name = save_audio(request.files)
+    timestamped_print("Audio file saved")
 
-    audio_data = request.files['audio_data']
-    audio_bytes = audio_data.read()
-
-    RECORDING_SAVE_PATH = "static/recordings"
-    os.makedirs(RECORDING_SAVE_PATH, exist_ok=True)
-
-    audio_filename = os.path.join(RECORDING_SAVE_PATH, "recording.wav")
-    with open(audio_filename, "wb") as f:
-        f.write(audio_bytes)
-
-    file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
-
-    # Transcribe using Whisper
-    result = whisper_model.transcribe(file_name, task="translate")
-    transcription = result['text']
-    print(f"Transcription: {transcription}")
+    transcription = translate_audio(file_name, asr_model, processor, selected_language)
+    timestamped_print("Audio translate_audio", transcription)
 
     user_input = transcription
     response_text = get_chatbot_response(user_input, selected_language)
 
-    OUTPUT_SAVE_PATH = "static/outputs"
-    os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
-    tts = gTTS(text=response_text, lang=selected_language, tld='co.in')
-    tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
-
-    audio_file_path = url_for('static', filename='outputs/final-output.mp3')
+    audio_file_path = convert_to_audio(response_text, selected_language)
+    timestamped_print("converted in audio", audio_file_path)
 
     # Print current time
     print(f"Query end time: {get_current_time()}")
 
     return jsonify({
         "user_input": user_input,
+        "recorded_audio_path": file_name,
         "response_text": response_text,
         "model_id": model_id,
         "audio_file_path": audio_file_path,

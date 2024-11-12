@@ -9,6 +9,7 @@ const modelId = document.getElementById("modelId");
 const userInputText = document.getElementById("userInputText");
 const modelResponseText = document.getElementById("modelResponseText");
 const modelResponsePlayer = document.getElementById("modelResponsePlayer");
+const modelRequestPlayer = document.getElementById("modelRequestPlayer");
 const submitTextButton = document.getElementById("submitTextButton");
 const textInput = document.getElementById("textInput");
 
@@ -85,6 +86,9 @@ async function sendAudio(audioBlobOrFile) {
     marked.parse(jsonResponse.response_text)
   );
   modelResponseText.innerHTML = marked.parse(jsonResponse.response_text);
+
+  modelRequestPlayer.src = jsonResponse.recorded_audio_path;
+  modelRequestPlayer.load();
 
   modelResponsePlayer.src = jsonResponse.audio_file_path;
   modelResponsePlayer.load();
