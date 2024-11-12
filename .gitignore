@@ -8,13 +8,7 @@ static/recordings/
 static/outputs/
 
 .env
-whisper-small-mr-finetuned-marathi
-whisper-small-mr
 
-whisper-small-mr-finetuned-marathi/
-whisper-small-mr/
 
-./whisper-small-mr-finetuned-marathi/
-./whisper-small-mr/
-
-whisper-small-mr-en-translation
+training/models/*
+!training/models/

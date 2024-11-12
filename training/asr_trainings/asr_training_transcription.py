@@ -7,14 +7,21 @@ import torch
 from dataclasses import dataclass
 from typing import Any, Dict, List, Union
 import evaluate
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Define the model name at the top-level
-MODEL_NAME = "./whisper-small-mr-finetuned-marathi"
+
+current_path = os.path.abspath(__file__)
+project_root = current_path[:current_path.index("ai-voice-assistant") + len("ai-voice-assistant")]
+
+MODEL_NAME = os.path.join(project_root, "training", "models", "whisper-small-mr-finetuned-marathi-2")
+
 
 # Hugging Face login using your token (set this in the environment variable 'HUGGINGFACE_TOKEN')
 huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
 login(token=huggingface_token)
-
 
 def load_custom_dataset_function():
     """
