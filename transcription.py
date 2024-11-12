@@ -3,7 +3,6 @@ import torch
 from transformers import WhisperProcessor, WhisperForConditionalGeneration
 
 import whisper
-#hello
 
 whisper_model = whisper.load_model("small")
 
