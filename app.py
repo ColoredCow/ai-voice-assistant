@@ -22,6 +22,7 @@ ASR_MODEL_NAME = 'pankaj-ag/whisper-small-mr-en-translation'
 
 processor, asr_model = load_asr_model(ASR_MODEL_NAME)
 
+
 def get_current_time():
     """Get the current time"""
     current_time = datetime.now()
