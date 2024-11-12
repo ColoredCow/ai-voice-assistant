@@ -24,7 +24,7 @@ jobs:
           cd $SSH_BUILD_DIRECTORY
 
           echo "Pulling latest code"
-        #   git checkout -f
+          git checkout -f
           git pull origin feature/cd
 
           source env/bin/activate
