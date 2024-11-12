@@ -4,11 +4,12 @@ from transformers import WhisperProcessor, WhisperForConditionalGeneration
 
 import whisper
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 # Load the Whisper model and processor from Hugging Face
 def load_asr_model(modelName):
     processor = WhisperProcessor.from_pretrained(modelName)
     model = WhisperForConditionalGeneration.from_pretrained(modelName)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     model = model.to(device)
     return processor, model
 
@@ -18,7 +19,7 @@ def transcribe_audio(file_path, model, processor, language):
 
     # Preprocess audio with WhisperProcessor
     inputs = processor(audio_array, sampling_rate=sampling_rate, return_tensors="pt")
-    input_features = inputs.input_features
+    input_features = inputs.input_features.to(device)
 
     # Generate transcription using the fine-tuned model
     with torch.no_grad():
@@ -33,7 +34,7 @@ def translate_audio(file_path, model, processor, language):
 
     # Preprocess audio with WhisperProcessor
     inputs = processor(audio_array, sampling_rate=sampling_rate, return_tensors="pt")
-    input_features = inputs.input_features
+    input_features = inputs.input_features.to(device)
 
     # Generate transcription using the fine-tuned model
     with torch.no_grad():
