@@ -70,7 +70,8 @@ class FineTuneLlama:
             learning_rate=1e-5,
             per_device_train_batch_size=1,
             per_device_eval_batch_size=1,
-            gradient_accumulation_steps=2,
+            gradient_accumulation_steps=8,
+            gradient_checkpointing=True,
             num_train_epochs=self.num_epochs,
             weight_decay=0.01,
             logging_dir=str(base_dir / 'logs'),
@@ -128,7 +129,8 @@ class FineTuneLlama:
 if __name__ == "__main__":
     # Free up unused GPU memory
     torch.cuda.empty_cache()
-    model_name = "meta-llama/Llama-3.2-1B-Instruct"
+    # model_name = "meta-llama/Llama-3.2-1B-Instruct"
+    model_name = "./fine_tuned_model"
     file_path = "data/training_data_1.json"
     output_dir = "./fine_tuned_model"
 
