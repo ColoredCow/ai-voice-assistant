@@ -2,6 +2,7 @@ let isRecording = false;
 let mediaRecorder;
 let audioChunks = [];
 const recordButton = document.getElementById("recordButton");
+const audioUpload = document.getElementById("audioUpload");
 const recordingStatus = document.getElementById("recordingStatus");
 const assistanceResponse = document.getElementById("assistanceResponse");
 const modelId = document.getElementById("modelId");
@@ -18,40 +19,43 @@ recordButton.addEventListener("click", async () => {
   }
 });
 
+// Handle uploaded audio file
+audioUpload.addEventListener("change", async (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    recordingStatus.textContent = "Status: Processing...";
+    await sendAudio(file);
+  }
+});
+
 async function startRecording() {
-  // Request microphone access
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   mediaRecorder = new MediaRecorder(stream);
   audioChunks = [];
 
-  // Record data in chunks
   mediaRecorder.ondataavailable = (event) => {
     audioChunks.push(event.data);
   };
 
-  // Handle stop recording event
   mediaRecorder.onstop = () => {
     const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
     sendAudio(audioBlob);
   };
 
-  // Start recording
   mediaRecorder.start();
   isRecording = true;
   recordingStatus.textContent = "Status: Recording...";
 }
 
 function stopRecording() {
-  // Stop the recording
   mediaRecorder.stop();
   isRecording = false;
   recordingStatus.textContent = "Status: Processing...";
 }
 
-async function sendAudio(audioBlob) {
-  // Send the audio to the server
+async function sendAudio(audioBlobOrFile) {
   const formData = new FormData();
-  formData.append("audio_data", audioBlob, "recording.wav");
+  formData.append("audio_data", audioBlobOrFile, "recording.wav");
 
   const response = await fetch("/process-audio", {
     method: "POST",

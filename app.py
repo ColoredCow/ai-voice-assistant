@@ -1,9 +1,7 @@
 from flask import Flask, jsonify, render_template, request, url_for
-# import sounddevice as sd
-# import scipy.io.wavfile
 import whisper
 import torch
-from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import pipeline
 from gtts import gTTS
 import os
 from datetime import datetime
@@ -31,9 +29,8 @@ app = Flask(__name__)
 # Load Whisper model
 whisper_model = whisper.load_model("base")
 
-# model_id = "meta-llama/Llama-3.2-1B-Instruct"
-# model_id = "pankaj-ag/fine_tuned_model"
 model_id = "coloredcow/paani-1b-instruct-marathi"
+
 pipe = pipeline(
     "text-generation",
     model=model_id,
@@ -41,22 +38,6 @@ pipe = pipeline(
     device_map="auto",
 )
 
-# bnb_config = BitsAndBytesConfig(
-#     load_in_4bit=True,
-# )
-
-# # Load tokenizer
-# tokenizer = AutoTokenizer.from_pretrained(model_id)
-
-# # Load the model with 4-bit quantization
-# model = AutoModelForCausalLM.from_pretrained(
-#     model_id,
-#     quantization_config=bnb_config,
-#     device_map="auto",
-#     torch_dtype=torch.float16,  # Setting this helps with speed and memory
-# )
-
-# model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
 
 selected_language = 'en'
 language_configs = {
@@ -74,21 +55,8 @@ language_configs = {
     },
 }
 
-# # Record audio function
-# def record_audio(duration=5, sample_rate=44100):
-#     """Record audio for the specified duration."""
-#     print(f"Recording for {duration} seconds...")
-#     audio_data = sd.rec(int(duration * sample_rate), samplerate=sample_rate, channels=1, dtype="int16")
-#     sd.wait()  # Wait until the recording is finished
-#     return audio_data, sample_rate
-
-# # Save audio file
-# def save_audio(file_name, audio_data, sample_rate):
-#     """Save recorded audio to a file."""
-#     scipy.io.wavfile.write(file_name, sample_rate, audio_data)
 
 def get_chatbot_response(input_text, language):
-
     instruction = language_configs[language]['chatbot_instruction']
     prompt = instruction + input_text
 
@@ -106,17 +74,7 @@ def get_chatbot_response(input_text, language):
         response = outputs[0]["generated_text"][-1]
         print("response from model......", response)
         return response['content']
-
-    # if hasattr(tokenizer, "apply_chat_template") and tokenizer.chat_template is not None:
-    #     messages = [
-    #         # {"role": "system", "content": "You are a chatbot designed to help Indian farmers on any agriculture related questions they have. Be a helpful guide and friend to empower them take best decisions for their crops and growth. Keep your responses brief and short until asked for details."},
-    #         {"role": "user", "content": prompt},
-    #     ]
-    #     prompt = tokenizer.apply_chat_template(
-    #         messages, tokenize=False, add_generation_prompt=True
-    #     )
-
-    # response = generate(model, tokenizer, prompt=prompt, verbose=True)
+    
     return None
 
 
@@ -152,18 +110,14 @@ def record_audio_endpoint():
     print(f"Transcription: {transcription}")
 
     user_input = transcription
-    # user_input = "tell me about crop seasons in India"
-    # user_input = "hello how are you?"
-    # response = get_chatbot_response(user_input, selected_language)
-    # response_text = response['content']
     response_text = get_chatbot_response(user_input, selected_language)
 
-    # OUTPUT_SAVE_PATH = "static/outputs"
-    # os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
-    # tts = gTTS(text=response_text, lang=selected_language, tld='co.in')
-    # tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
+    OUTPUT_SAVE_PATH = "static/outputs"
+    os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
+    tts = gTTS(text=response_text, lang=selected_language, tld='co.in')
+    tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
 
-    # audio_file_path = url_for('static', filename='outputs/final-output.mp3')
+    audio_file_path = url_for('static', filename='outputs/final-output.mp3')
 
     # Print current time
     print(f"Query end time: {get_current_time()}")
@@ -172,7 +126,7 @@ def record_audio_endpoint():
         "user_input": user_input,
         "response_text": response_text,
         "model_id": model_id,
-        # "audio_file_path": audio_file_path,
+        "audio_file_path": audio_file_path,
     })
 
 if __name__ == "__main__":

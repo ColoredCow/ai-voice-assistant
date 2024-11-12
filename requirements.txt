@@ -12,6 +12,7 @@ click==8.1.7
 datasets==3.1.0
 decorator==5.1.1
 dill==0.3.8
+evaluate==0.4.3
 filelock==3.16.1
 Flask==3.0.3
 frozenlist==1.5.0
@@ -25,6 +26,8 @@ Jinja2==3.1.4
 joblib==1.4.2
 lazy_loader==0.4
 librosa==0.10.2
+jiwer==3.0.5
+librosa==0.10.2.post1
 llvmlite==0.43.0
 MarkupSafe==3.0.2
 more-itertools==10.5.0
