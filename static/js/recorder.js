@@ -5,6 +5,7 @@ const recordButton = document.getElementById("recordButton");
 const audioUpload = document.getElementById("audioUpload");
 const recordingStatus = document.getElementById("recordingStatus");
 const assistanceResponse = document.getElementById("assistanceResponse");
+const modelId = document.getElementById("modelId");
 const userInputText = document.getElementById("userInputText");
 const modelResponseText = document.getElementById("modelResponseText");
 const modelResponsePlayer = document.getElementById("modelResponsePlayer");
@@ -64,8 +65,15 @@ async function sendAudio(audioBlobOrFile) {
   const jsonResponse = await response.json();
   console.log({ jsonResponse });
   recordingStatus.textContent = "Status: Idle";
-  userInputText.textContent = jsonResponse.user_input;
-  modelResponseText.textContent = jsonResponse.response_text;
+  modelId.innerHTML = jsonResponse.model_id;
+  userInputText.innerHTML = jsonResponse.user_input;
+  console.log("jsonResponse.response_text....", jsonResponse.response_text);
+  console.log("marked typeof", typeof marked);
+  console.log(
+    "marked jsonResponse.response_text",
+    marked.parse(jsonResponse.response_text)
+  );
+  modelResponseText.innerHTML = marked.parse(jsonResponse.response_text);
 
   modelResponsePlayer.src = jsonResponse.audio_file_path;
   modelResponsePlayer.load();

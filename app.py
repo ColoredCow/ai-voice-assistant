@@ -1,19 +1,14 @@
 from flask import Flask, jsonify, render_template, request, url_for
-# import sounddevice as sd
-# import scipy.io.wavfile
-# import whisper
+import whisper
+import torch
+from transformers import pipeline
 from gtts import gTTS
 import os
 from datetime import datetime
-import librosa
-
-import torch
-from transformers import WhisperProcessor, WhisperForConditionalGeneration
-from dotenv import load_dotenv # type: ignore
+from dotenv import load_dotenv
 import os
 from huggingface_hub import login
-from mlx_lm import load, generate # type: ignore
-from transcription import load_asr_model, transcribe_audio, translate_with_whisper, transcribe_with_whisper, translate_audio
+# from mlx_lm import load, generate
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -22,24 +17,35 @@ load_dotenv()
 huggingface_token = os.getenv('HUGGINGFACE_TOKEN')
 login(token=huggingface_token)
 
+def get_current_time():
+    """Get the current time"""
+    current_time = datetime.now()
+    formatted_time = current_time.strftime("%H:%M:%S")
+    return formatted_time
+
 # Initialize Flask app
 app = Flask(__name__)
 
-MODEL_NAME = 'pankaj-ag/whisper-small-mr-en-translation'
+# Load Whisper model
+whisper_model = whisper.load_model("base")
+
+model_id = "coloredcow/paani-1b-instruct-marathi"
+
+pipe = pipeline(
+    "text-generation",
+    model=model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="auto",
+)
 
 
-processor, asr_model = load_asr_model(MODEL_NAME)
-
-model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
-
-selected_language = 'mr'
-
+selected_language = 'en'
 language_configs = {
     "en": {
         "chatbot_instruction": "Please answer the following question in English:\n",
     },
     "hi": {
-        "chatbot_instruction": "कृपया निम्नलिखित प्रश्न का उत्तर हिंदी में दें और हाइलाइट्स के लिए विशेष कीवर्ड जैसे * बोल्ड आदि से बचें:\n",
+        "chatbot_instruction": "कृपया निम्नलिखित प्रश्न का उत्तर हिंदी में दें:\n",
     },
     "mr": {
         "chatbot_instruction": "कृपया पुढील प्रश्नाचे उत्तर मराठीत द्या:\n",
@@ -49,24 +55,41 @@ language_configs = {
     },
 }
 
-OUTPUT_SAVE_PATH = "static/outputs"
+
+def get_chatbot_response(input_text, language):
+    instruction = language_configs[language]['chatbot_instruction']
+    prompt = instruction + input_text
+
+    if model_id == 'meta-llama/Llama-3.2-1B-Instruct' or model_id == 'coloredcow/paani-1b-instruct-marathi' or model_id == 'pankaj-ag/fine_tuned_model':
+        print('inside model id check')
+        messages = [
+            # {"role": "system", "content": "You are a chatbot designed to help Indian farmers on any agriculture related questions they have. Be a helpful guide and friend to empower them take best decisions for their crops and growth. Keep your responses brief and short until asked for details."},
+            {"role": "user", "content": prompt},
+        ]
+        outputs = pipe(
+            messages,
+            max_new_tokens=256,
+            do_sample=False,
+        )
+        response = outputs[0]["generated_text"][-1]
+        print("response from model......", response)
+        return response['content']
+    
+    return None
 
 
-def get_current_time():
-    """Get the current time"""
-    current_time = datetime.now()
-    formatted_time = current_time.strftime("%H:%M:%S")
-    return formatted_time
+# Route to render the HTML page with the recording UI
+@app.route('/')
+def index():
+    return render_template('record.html')
 
-def timestamped_print(*args, **kwargs):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print("\n\n")
-    print( f"[{timestamp}]", *args, **kwargs)
-    print("\n\n")
+# Flask route to record and transcribe audio
+@app.route('/process-audio', methods=['POST'])
+def record_audio_endpoint():
+    # Print current time
+    print(f"Query start time: {get_current_time()}")
 
-
-def save_audio(files):
-    if 'audio_data' not in files:
+    if 'audio_data' not in request.files:
         return jsonify({"error": "No audio file uploaded"}), 400
 
     audio_data = request.files['audio_data']
@@ -81,93 +104,28 @@ def save_audio(files):
 
     file_name = f"{RECORDING_SAVE_PATH}/recording.wav"
 
-    return file_name
+    # Transcribe using Whisper
+    result = whisper_model.transcribe(file_name, task="translate")
+    transcription = result['text']
+    print(f"Transcription: {transcription}")
 
-# def transcribe_audio(file_path, language):
-#     # Load the audio file using librosa
-#     audio_array, sampling_rate = librosa.load(file_path, sr=16000)
+    user_input = transcription
+    response_text = get_chatbot_response(user_input, selected_language)
 
-#     # Preprocess audio with WhisperProcessor
-#     inputs = processor(audio_array, sampling_rate=sampling_rate, return_tensors="pt")
-#     input_features = inputs.input_features
-
-#     # Generate transcription using the fine-tuned model
-#     with torch.no_grad():
-#         # generated_tokens = whisper_model.generate(input_features)
-#         generated_tokens = whisper_model.generate(input_features, forced_decoder_ids=processor.get_decoder_prompt_ids(language="Marathi", task="translate"))
-#         transcription = processor.decode(generated_tokens[0], skip_special_tokens=True)
-
-#     return transcription
-
-def get_chatbot_response(input_text, language):
-    instruction = language_configs[language]['chatbot_instruction']
-    prompt = instruction + input_text
-
-    if hasattr(tokenizer, "apply_chat_template") and tokenizer.chat_template is not None:
-        messages = [
-            # {"role": "system", "content": "You are a chatbot designed to help Indian farmers on any agriculture related questions they have. Be a helpful guide and friend to empower them take best decisions for their crops and growth. Keep your responses brief and short until asked for details."},
-            {"role": "user", "content": prompt},
-        ]
-        prompt = tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-
-    response = generate(model, tokenizer, prompt=prompt, verbose=True)
-
-    print("response generated", response)
-    return {"content": response}
-
-
-
-def convert_to_audio(text, language):
+    OUTPUT_SAVE_PATH = "static/outputs"
     os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
-    tts = gTTS(text=text, lang=language, tld='co.in')
+    tts = gTTS(text=response_text, lang=selected_language, tld='co.in')
     tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
+
     audio_file_path = url_for('static', filename='outputs/final-output.mp3')
-    return audio_file_path
-
-# Route to render the HTML page with the recording UI
-@app.route('/')
-def index():
-    return render_template('record.html')
-
-# Flask route to record and transcribe audio
-@app.route('/process-audio', methods=['POST'])
-def record_audio_endpoint():
-    # Print current time
-    print(f"Query start time: {get_current_time()}")
-
-    file_name = save_audio(request.files)
-    timestamped_print("Audio file saved")
-
-    transcription = translate_with_whisper(file_name, asr_model, processor, selected_language)
-    timestamped_print("Audio translate_with_whisper", transcription)
-
-    transcription = translate_audio(file_name, asr_model, processor, selected_language)
-    timestamped_print("Audio translate_audio", transcription)
-
-    # transcription = transcribe_with_whisper(file_name, asr_model, processor, selected_language)
-    # timestamped_print("Audio transcribe_with_whisper", transcription)
-
-    # transcription = transcribe_audio(file_name, asr_model, processor, selected_language)
-    # timestamped_print("Audio transcribe", transcription)
-
-
-    response = get_chatbot_response(transcription, selected_language)
-    response_text = response['content']
-    timestamped_print("Answer generated", response_text)
-
-
-    audio_file_path = convert_to_audio(response_text, selected_language)
-    timestamped_print("converted in audio", audio_file_path)
-
 
     # Print current time
     print(f"Query end time: {get_current_time()}")
 
     return jsonify({
-        "user_input": transcription,
+        "user_input": user_input,
         "response_text": response_text,
+        "model_id": model_id,
         "audio_file_path": audio_file_path,
     })
 
