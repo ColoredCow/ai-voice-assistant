@@ -13,6 +13,7 @@ from dotenv import load_dotenv # type: ignore
 import os
 from huggingface_hub import login
 from mlx_lm import load, generate # type: ignore
+from transcription import load_asr_model, transcribe_audio, translate_with_whisper, transcribe_with_whisper, translate_audio
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -24,16 +25,10 @@ login(token=huggingface_token)
 # Initialize Flask app
 app = Flask(__name__)
 
-MODEL_NAME = 'pankaj-ag/whisper-small-mr-finetuned-marathi'
+MODEL_NAME = 'pankaj-ag/whisper-small-mr-en-translation'
 
-# Load the Whisper model and processor from Hugging Face
-def load_finetuned_model():
-    processor = WhisperProcessor.from_pretrained(MODEL_NAME)
-    model = WhisperForConditionalGeneration.from_pretrained(MODEL_NAME)
-    return processor, model
 
-# # Load Whisper model
-processor, whisper_model = load_finetuned_model()
+processor, asr_model = load_asr_model(MODEL_NAME)
 
 model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
 
@@ -88,21 +83,21 @@ def save_audio(files):
 
     return file_name
 
-def transcribe_audio(file_path, language):
-    # Load the audio file using librosa
-    audio_array, sampling_rate = librosa.load(file_path, sr=16000)
+# def transcribe_audio(file_path, language):
+#     # Load the audio file using librosa
+#     audio_array, sampling_rate = librosa.load(file_path, sr=16000)
 
-    # Preprocess audio with WhisperProcessor
-    inputs = processor(audio_array, sampling_rate=sampling_rate, return_tensors="pt")
-    input_features = inputs.input_features
+#     # Preprocess audio with WhisperProcessor
+#     inputs = processor(audio_array, sampling_rate=sampling_rate, return_tensors="pt")
+#     input_features = inputs.input_features
 
-    # Generate transcription using the fine-tuned model
-    with torch.no_grad():
-        # generated_tokens = whisper_model.generate(input_features)
-        generated_tokens = whisper_model.generate(input_features, forced_decoder_ids=processor.get_decoder_prompt_ids(language="Marathi", task="translate"))
-        transcription = processor.decode(generated_tokens[0], skip_special_tokens=True)
+#     # Generate transcription using the fine-tuned model
+#     with torch.no_grad():
+#         # generated_tokens = whisper_model.generate(input_features)
+#         generated_tokens = whisper_model.generate(input_features, forced_decoder_ids=processor.get_decoder_prompt_ids(language="Marathi", task="translate"))
+#         transcription = processor.decode(generated_tokens[0], skip_special_tokens=True)
 
-    return transcription
+#     return transcription
 
 def get_chatbot_response(input_text, language):
     instruction = language_configs[language]['chatbot_instruction']
@@ -145,8 +140,17 @@ def record_audio_endpoint():
     file_name = save_audio(request.files)
     timestamped_print("Audio file saved")
 
-    transcription = transcribe_audio(file_name, selected_language)
-    timestamped_print("Audio transcribed", transcription)
+    transcription = translate_with_whisper(file_name, asr_model, processor, selected_language)
+    timestamped_print("Audio translate_with_whisper", transcription)
+
+    transcription = translate_audio(file_name, asr_model, processor, selected_language)
+    timestamped_print("Audio translate_audio", transcription)
+
+    # transcription = transcribe_with_whisper(file_name, asr_model, processor, selected_language)
+    # timestamped_print("Audio transcribe_with_whisper", transcription)
+
+    # transcription = transcribe_audio(file_name, asr_model, processor, selected_language)
+    # timestamped_print("Audio transcribe", transcription)
 
 
     response = get_chatbot_response(transcription, selected_language)

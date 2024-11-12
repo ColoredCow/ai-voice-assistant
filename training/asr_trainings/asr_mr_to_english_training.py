@@ -14,7 +14,8 @@ load_dotenv()
 current_path = os.path.abspath(__file__)
 project_root = current_path[:current_path.index("ai-voice-assistant") + len("ai-voice-assistant")]
 DATA_PATH = os.path.join(project_root, "training", "data")
-MODEL_NAME = os.path.join(project_root, "training", "models", "whisper-small-mr-en-translation-2")
+MODEL_NAME = os.path.join(project_root, "training", "models", "whisper-small-mr-en-translation-medium")
+BASE_MODEL = 'openai/whisper-small'
 
 
 

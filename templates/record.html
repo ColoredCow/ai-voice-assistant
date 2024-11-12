@@ -7,9 +7,17 @@
 </head>
 <body>
     <h1>Paani Voice Assistant</h1>
+
+    <!-- Section for Recording Audio -->
     <h3>Record audio</h3>
     <button id="recordButton">Start/Stop Recording</button>
     <p id="recordingStatus">Status: Idle</p>
+
+    <!-- Section for Uploading Audio -->
+    <h3>Or upload an audio file</h3>
+    <input type="file" id="audioUpload" accept="audio/*">
+
+    <!-- Display response -->
     <div id="assistanceResponse" style="display: none;">
         <p><strong>User Input:</strong> <span id="userInputText"></span></p>
         <p><strong>Model Response:</strong> <span id="modelResponseText"></span></p>
@@ -18,6 +26,8 @@
             Your browser does not support the audio element.
         </audio>
     </div>
+
     <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
 </body>
 </html>
+
