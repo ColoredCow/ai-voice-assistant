@@ -31,8 +31,9 @@ app = Flask(__name__)
 # # Load Whisper model
 # whisper_model = whisper.load_model("base")
 
-# meta-llama/Llama-3.2-1B-Instruct
 model_id = "meta-llama/Llama-3.2-1B-Instruct"
+# model_id = "coloredcow/paani-1b-instruct-marathi"
+# model_id = "pankaj-ag/fine_tuned_model"
 pipe = pipeline(
     "text-generation",
     model=model_id,
@@ -91,8 +92,8 @@ def get_chatbot_response(input_text, language):
     instruction = language_configs[language]['chatbot_instruction']
     prompt = instruction + input_text
 
-    if model_id == 'meta-llama/Llama-3.2-1B-Instruct':
-        print('inside model -id check')
+    if model_id == 'meta-llama/Llama-3.2-1B-Instruct' or model_id == 'coloredcow/paani-1b-instruct-marathi' or model_id == 'pankaj-ag/fine_tuned_model':
+        print('inside model id check')
         messages = [
             # {"role": "system", "content": "You are a chatbot designed to help Indian farmers on any agriculture related questions they have. Be a helpful guide and friend to empower them take best decisions for their crops and growth. Keep your responses brief and short until asked for details."},
             {"role": "user", "content": prompt},
@@ -102,8 +103,7 @@ def get_chatbot_response(input_text, language):
             max_new_tokens=256,
         )
         response = outputs[0]["generated_text"][-1]
-        print("response......")
-        print(response)
+        print("response from model......", response)
         return response['content']
 
     # if hasattr(tokenizer, "apply_chat_template") and tokenizer.chat_template is not None:
@@ -125,7 +125,7 @@ def index():
     return render_template('record.html')
 
 # Flask route to record and transcribe audio
-@app.route('/process-audio', methods=['POST'])
+@app.route('/process-audio', methods=['GET'])
 def record_audio_endpoint():
     # Print current time
     print(f"Query start time: {get_current_time()}")
@@ -170,6 +170,7 @@ def record_audio_endpoint():
     return jsonify({
         "user_input": user_input,
         "response_text": response_text,
+        "model_id": model_id,
         # "audio_file_path": audio_file_path,
     })
 
