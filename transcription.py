@@ -38,7 +38,7 @@ def translate_audio(file_path, model, processor, language):
 
     # Generate transcription using the fine-tuned model
     with torch.no_grad():
-        generated_tokens = model.generate(input_features, forced_decoder_ids=processor.get_decoder_prompt_ids(language="mr", task="translate"))
+        generated_tokens = model.generate(input_features, forced_decoder_ids=processor.get_decoder_prompt_ids(language=language, task="translate"))
         transcription = processor.decode(generated_tokens[0], skip_special_tokens=True)
 
     return transcription
