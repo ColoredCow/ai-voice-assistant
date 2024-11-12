@@ -31,9 +31,9 @@ app = Flask(__name__)
 # # Load Whisper model
 # whisper_model = whisper.load_model("base")
 
-model_id = "meta-llama/Llama-3.2-1B-Instruct"
+# model_id = "meta-llama/Llama-3.2-1B-Instruct"
+model_id = "pankaj-ag/fine_tuned_model"
 # model_id = "coloredcow/paani-1b-instruct-marathi"
-# model_id = "pankaj-ag/fine_tuned_model"
 pipe = pipeline(
     "text-generation",
     model=model_id,
