@@ -4,8 +4,6 @@ from transformers import WhisperProcessor, WhisperForConditionalGeneration
 
 import whisper
 
-whisper_model = whisper.load_model("small")
-
 # Load the Whisper model and processor from Hugging Face
 def load_asr_model(modelName):
     processor = WhisperProcessor.from_pretrained(modelName)
@@ -37,13 +35,14 @@ def translate_audio(file_path, model, processor, language):
 
     # Generate transcription using the fine-tuned model
     with torch.no_grad():
-        generated_tokens = model.generate(input_features, forced_decoder_ids=processor.get_decoder_prompt_ids(language="mr", task="translate"))
+        generated_tokens = model.generate(input_features, forced_decoder_ids=processor.get_decoder_prompt_ids(language=language, task="translate"))
         transcription = processor.decode(generated_tokens[0], skip_special_tokens=True)
 
     return transcription
 
 def translate_with_base_whisper(file_path, model, processor, language):
     # Transcribe using Whisper
+    whisper_model = whisper.load_model("small")
     result = whisper_model.transcribe(file_path, task="translate", language = language)
     transcription = result['text']
     print(f"Transcription: {transcription}")
@@ -51,6 +50,7 @@ def translate_with_base_whisper(file_path, model, processor, language):
 
 def transcribe_with_base_whisper(file_path, model, processor, language):
     # Transcribe using Whisper
+    whisper_model = whisper.load_model("small")
     result = whisper_model.transcribe(file_path, task="transcribe", language = language)
     transcription = result['text']
     print(f"Transcription: {transcription}")

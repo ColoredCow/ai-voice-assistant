@@ -7,7 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 from huggingface_hub import login
-from transcription import load_asr_model, translate_with_base_whisper, translate_audio
+from transcription import load_asr_model, translate_audio
 
 # Load the environment variables from the .env file
 load_dotenv()
