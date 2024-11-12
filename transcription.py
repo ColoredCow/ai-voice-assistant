@@ -8,6 +8,8 @@ import whisper
 def load_asr_model(modelName):
     processor = WhisperProcessor.from_pretrained(modelName)
     model = WhisperForConditionalGeneration.from_pretrained(modelName)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = model.to(device)
     return processor, model
 
 def transcribe_audio(file_path, model, processor, language):
