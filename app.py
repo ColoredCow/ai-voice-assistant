@@ -129,5 +129,34 @@ def record_audio_endpoint():
         "audio_file_path": audio_file_path,
     })
 
+# Flask route to handle text input
+@app.route('/process-text', methods=['POST'])
+def process_text_endpoint():
+    print(f"Query start time: {get_current_time()}")
+
+    if 'text_input' not in request.form:
+        return jsonify({"error": "No text input provided"}), 400
+
+    user_input = request.form['text_input']
+    print(f"User Input: {user_input}")
+
+    response_text = get_chatbot_response(user_input, selected_language)
+
+    OUTPUT_SAVE_PATH = "static/outputs"
+    os.makedirs(OUTPUT_SAVE_PATH, exist_ok=True)
+    tts = gTTS(text=response_text, lang=selected_language, tld='co.in')
+    tts.save(f"{OUTPUT_SAVE_PATH}/final-output.mp3")
+
+    audio_file_path = url_for('static', filename='outputs/final-output.mp3')
+
+    print(f"Query end time: {get_current_time()}")
+
+    return jsonify({
+        "user_input": user_input,
+        "response_text": response_text,
+        "model_id": model_id,
+        "audio_file_path": audio_file_path,
+    })
+
 if __name__ == "__main__":
     app.run(debug=True)

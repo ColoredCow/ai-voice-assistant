@@ -9,6 +9,8 @@ const modelId = document.getElementById("modelId");
 const userInputText = document.getElementById("userInputText");
 const modelResponseText = document.getElementById("modelResponseText");
 const modelResponsePlayer = document.getElementById("modelResponsePlayer");
+const submitTextButton = document.getElementById("submitTextButton");
+const textInput = document.getElementById("textInput");
 
 recordButton.addEventListener("click", async () => {
   assistanceResponse.style.display = "none";
@@ -25,6 +27,15 @@ audioUpload.addEventListener("change", async (event) => {
   if (file) {
     recordingStatus.textContent = "Status: Processing...";
     await sendAudio(file);
+  }
+});
+
+// Event listener for text input submission
+submitTextButton.addEventListener("click", async () => {
+  const text = textInput.value;
+  if (text) {
+    recordingStatus.textContent = "Status: Processing...";
+    await sendText(text);
   }
 });
 
@@ -77,6 +88,35 @@ async function sendAudio(audioBlobOrFile) {
 
   modelResponsePlayer.src = jsonResponse.audio_file_path;
   modelResponsePlayer.load();
+
+  assistanceResponse.style.display = "block";
+}
+
+// Function to send text input to the server
+async function sendText(text) {
+  const formData = new FormData();
+  formData.append("text_input", text);
+
+  const response = await fetch("/process-text", {
+    method: "POST",
+    body: formData,
+  });
+
+  const jsonResponse = await response.json();
+  console.log({ jsonResponse });
+  recordingStatus.textContent = "Status: Idle";
+  modelId.innerHTML = jsonResponse.model_id;
+  userInputText.innerHTML = jsonResponse.user_input;
+  modelResponseText.innerHTML = marked.parse(jsonResponse.response_text);
+
+  // Handle model response audio if available
+  if (jsonResponse.audio_file_path) {
+    modelResponsePlayer.src = jsonResponse.audio_file_path;
+    modelResponsePlayer.load();
+    modelResponsePlayer.style.display = 'block';
+  } else {
+    modelResponsePlayer.style.display = 'none';
+  }
 
   assistanceResponse.style.display = "block";
 }
