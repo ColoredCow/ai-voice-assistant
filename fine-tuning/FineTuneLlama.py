@@ -129,8 +129,8 @@ class FineTuneLlama:
 if __name__ == "__main__":
     # Free up unused GPU memory
     torch.cuda.empty_cache()
-    # model_name = "meta-llama/Llama-3.2-1B-Instruct"
-    model_name = "./fine_tuned_model"
+    model_name = "meta-llama/Llama-3.2-1B-Instruct"
+    # model_name = "./fine_tuned_model"
     file_path = "data/training_data_1.json"
     output_dir = "./fine_tuned_model"
 

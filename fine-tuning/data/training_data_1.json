@@ -1,14 +1,14 @@
 [
   {
-    "input": "प्रश्नरबियांना जिवाणू कल्चर लावले आणि सावलीत सुकवले. पेरायला चालू करणार एवढ्यात पाऊस आला. तर ते बियाणे दोन दिवसांनी वाफसा झाल्यावर पेरू शकतो का?",
-    "output": "बियाणे चालेल, मात्र जैविक बीजप्रक्रिया केल्यानंतर जिवाणू २ दिवस जिवंत राहत नाहीत. ४ तासांच्या आत मातीत मिसळले तरच ते जिवंत राहतात. त्यामुळे जिवाणूंचे फायदे पहिजे असतील, तर २ दिवसांनी वाफसा आल्यावर पुन्हा एकदा जैविक बीजप्रक्रिया करून पेरणी करावी. मात्र रासायनिक बीजप्रक्रिया आधी केली असेल, तर पुन्हा करायची गरज नाही."
+    "input": "Rhizobium and PSB used for biological seed treatment of soybeans are marketed by various companies. So how do you identify a good bacterial culture?",
+    "output": "Preference should be given to purchase bacterial culture from Agricultural Universities, KVK if possible. Check the expiration date of the bacterial culture while purchasing. If the rhizobium and PSB in the market are available in powder form, the bag can be held upside down in the hand to see if it is good or not. After holding the bag upside down, the bacteria inside the compost bag itself. If it is stuck it should be considered good and if it falls completely then it should not be bought as it lacks moisture."
   },
   {
-    "input": "सोयाबीन पेरणीपूर्व बीजप्रक्रियेसाठी कोणती औषधी किती प्रमाणात वापरावी?",
-    "output": "रासायनिक बीजप्रक्रिया पुढील 2 पैकी कोणत्याही एका प्रकारे करावी.\n\n1. पर्याय 1: बुरशीनाशक व त्यानंतर कीटकनाशकाची अशी वेगवेगळी बीजप्रक्रिया करू शकता.\n    a. बुरशीनाशक\n        • थायरम 37.5% + कार्बोक्झीन 37.5% (बाजारातील नाव- विटावेक्स पॉवर) 3 ग्रॅम प्रती किलो बियाणे\n    b. कीटकनाशके\n        • खोडमाशीसाठी: थायोमेथोक्झाम 30% (बाजारातील नावे- क्रुझर, एक्सप्रेस, ट्रायो इ.) 10 मिली प्रती किलो बियाणे\n        • रस शोषणाऱ्या किडीसाठी: इमिडाक्लोप्रिड 48% (बाजारातील नाव- गाउचो) 1.5 मिली प्रती किलो बियाणे\n\n2. पर्याय 2: बुरशीनाशक व कीटकनाशकाच्या मिश्रणाची एकदाच बीजप्रक्रिया सुद्धा करू शकता.\n    a. औषध व प्रमाण: अझोक्सीस्ट्रोबिन 2.5% + थायोफिनेट मिथाईल 11.25% + थायोमेथोक्झाम 25% (बाजारातील नावे- वार्डन, कास्केड, इलेक्ट्रॉन इ.) - 10 मिली / किलो बियाणे\n\nजैविक बीजप्रक्रिया:\n• रायझोबियम (सोयाबीन गटाचे) - 25 ग्रॅम प्रती किलो बियाणे (लिकिड असेल तर 5 मिली प्रती किलो बियाणे)\n• पीएसबी - 25 ग्रॅम प्रती किलो बियाणे (लिकिड असेल तर 5 मिली प्रती किलो बियाणे)\n• केएमबी - 25 ग्रॅम प्रती किलो बियाणे (लिकिड असेल तर 5 मिली प्रती किलो बियाणे)\n• ट्रायकोडर्मा - 5 ग्रॅम प्रती किलो बियाणे (लिकिड असेल तर 6 मिली प्रती किलो बियाणे)\n\nपानी फाउंडेशनच्या व्हिडिओ ६ (https://www.youtube.com/watch?v=n4m2rJ9Mvr8) मध्ये याबाबत सविस्तर माहिती आहे."
+    "input": "What is PSB?",
+    "output": "PSB stands for Phosphorus Solubilizing Bacteria. Legumes require more phosphorus. Phosphorus is present in our soil, but not in a form available to crops. PB works to make the phosphorus in the soil available to the crop in the form it needs. They are very useful for all crops, in all soils. Similarly, the chemical fertilizer applied for Phosphorus is only 15-20% effective. This means that only 15-20% of the chemical fertilizers we apply become available to the crops. And 80-85% is stabilized. PSBs work to provide stabilized phosphorus"
   },
   {
-    "input": "सोयाबीनला जैविक बीजप्रक्रिया करण्यासाठी वापरण्यात येणाऱ्या रायझोबियम आणि २$७8 चे बाजारात विविध कंपन्यांचे प्रॉडक्ट आहेत. तर चांगले जिवाणू कल्चर कोणते हे कसे ओळखावे?",
-    "output": "• ७ शक्‍यतो कृषि विद्यापीठे, (/< इथे मिळणारे जिवाणू कल्चर खरेदी करण्याला प्राधान्य द्यावे.\n• खरेदी करत असताना जिवाणू कल्वरची एक्स्पायरी डेट तपासावी.\n• बाजारातील रायझोबियम आणि पीएसबी पावडर स्वरुपात उपलब्ध असल्यास पिशवीला हातामध्ये उलटे धरुन चांगले आहे किंवा नाही हे पाहता येईल. पिशवी उलटी धरल्यानंतर आतील जिवाणू खत पिशवीलाच चिकटलेले असल्यास ते चांगले समजावे व पूर्णतः खाली आल्यास त्याच्यामध्ये ओलावा नसल्यामुळे ते खरेदी करु नये."
+    "input": "If the seed treatment of bacterial fertilizers is to be done, will PSB, Rhizobium, Trichoderma be used in combination?",
+    "output": "Since these are all organic fertilizers, it would be appropriate to use them together. But no chemical drugs should be mixed in it."
   }
 ]
