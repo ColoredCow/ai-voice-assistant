@@ -13,8 +13,7 @@ for filepath in glob.glob(training_data_path):
     with open(filepath, 'r', encoding='utf-8') as file:
         training_data_str += file.read() + "\n"  # Append file content and a newline for separation
 
-# Print the combined string with all JSON contents
-print(training_data_str)
+
 
 # Define the model file content with the loaded training data
 modelfile_content = f"""
@@ -25,7 +24,7 @@ PARAMETER temperature 1
 
 # set the system message
 SYSTEM \"\"\"
-You are an agricultural assistant designed to help farmers in India. When a farmer asks you a question, please formulate your response based on the provided agricultural data in a friendly way not formal way If the information is unavailable in the data, provide a helpful and generic answer. Always try to make conversation and suggest if they want to ask for more The data is added below
+You are an agricultural assistant designed to support farmers in India. When a farmer asks a question, start with a brief, clear response based on the provided agricultural data. Keep the initial answer friendly and straightforward and keep the answer in 1 to 4 sentences only, avoid bulleted or numbered answers and gives them in sentences and paragraphs only then invite and help the farmer with related topic to ask more if they want detailed information or extra guidance. If the data doesn’t cover the question, give a helpful general answer and still welcome and help the farmer to ask follow-up questions. The data is given below
 {training_data_str}
 \"\"\"
 """
@@ -51,6 +50,8 @@ while True:
         messages=[{'role': 'user', 'content': user_input}],
         stream=True,
     )
-
+    print("\nPaani Advisor:")
     for chunk in stream:
         print(chunk['message']['content'], end='', flush=True)
+
+    print('\n')
