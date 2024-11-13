@@ -45,7 +45,7 @@ def translate_audio(file_path, model, processor, language):
 
 def translate_with_base_whisper(file_path, model, processor, language):
     # Transcribe using Whisper
-    whisper_model = whisper.load_model("small")
+    whisper_model = whisper.load_model("medium")
     result = whisper_model.transcribe(file_path, task="translate", language = language)
     transcription = result['text']
     print(f"Transcription: {transcription}")

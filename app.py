@@ -7,7 +7,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 from huggingface_hub import login
-from transcription import load_asr_model, translate_audio
+from transcription import load_asr_model, translate_audio, translate_with_base_whisper
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -125,8 +125,12 @@ def record_audio_endpoint():
     file_name = save_audio(request.files)
     timestamped_print("Audio file saved")
 
+
     transcription = translate_audio(file_name, asr_model, processor, selected_language)
     timestamped_print("Audio translate_audio", transcription)
+
+    transcription = translate_with_base_whisper(file_name, asr_model, processor, selected_language)
+    timestamped_print("Audio translate_with_base_whisper", transcription)
 
     user_input = transcription
     response_text = get_chatbot_response(user_input, selected_language)
