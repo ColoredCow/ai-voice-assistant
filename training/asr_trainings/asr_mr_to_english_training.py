@@ -14,8 +14,8 @@ load_dotenv()
 current_path = os.path.abspath(__file__)
 project_root = current_path[:current_path.index("ai-voice-assistant") + len("ai-voice-assistant")]
 DATA_PATH = os.path.join(project_root, "training", "data")
-MODEL_NAME = os.path.join(project_root, "training", "models", "whisper-small-mr-en-translation-medium")
-BASE_MODEL = 'openai/whisper-small'
+MODEL_NAME = os.path.join(project_root, "training", "models", "whisper-small-mr-en-translation_v2")
+BASE_MODEL = 'openai/whisper-medium'
 
 
 
@@ -157,9 +157,9 @@ def train_and_save_translation_model():
     dataset = load_translation_dataset()
 
     # Feature extractor and tokenizer for translation
-    feature_extractor = WhisperFeatureExtractor.from_pretrained("openai/whisper-small")
-    tokenizer = WhisperTokenizer.from_pretrained("openai/whisper-small", language="Marathi", task="translate")
-    processor = WhisperProcessor.from_pretrained("openai/whisper-small", language="Marathi", task="translate")
+    feature_extractor = WhisperFeatureExtractor.from_pretrained(BASE_MODEL)
+    tokenizer = WhisperTokenizer.from_pretrained(BASE_MODEL, language="Marathi", task="translate")
+    processor = WhisperProcessor.from_pretrained(BASE_MODEL, language="Marathi", task="translate")
 
     # Preprocess data
     dataset = preprocess_translation_data(dataset, feature_extractor, tokenizer)

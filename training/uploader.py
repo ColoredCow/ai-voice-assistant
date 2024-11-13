@@ -2,13 +2,13 @@ from transformers import WhisperForConditionalGeneration, WhisperTokenizer, Whis
 from huggingface_hub import HfApi, upload_folder
 
 checkpoint_dir = "./whisper-small-mr/checkpoint-100"
-output_dir = "./test_training/whisper-small-mr-en-translation"
-repo_id = "pankaj-ag/whisper-small-mr-en-translation"
+output_dir = "./models/whisper-small-mr-en-translation_v2"
+repo_id = "pankaj-ag/whisper-medium-mr-en-translation-v2"
 
 # Initialize Hugging Face API
-api = HfApi()
+# api = HfApi()
 
-api.create_repo(repo_id=repo_id, repo_type="model")
+# api.create_repo(repo_id=repo_id, repo_type="model")
 
 # # Load model, tokenizer, and feature extractor
 # model = WhisperForConditionalGeneration.from_pretrained(checkpoint_dir)
