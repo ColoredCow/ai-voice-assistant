@@ -3,19 +3,20 @@ import ollama
 import glob
 
 # Directory containing training data files
-training_data_path = 'fine-tuning/data/*1.json'
+training_data_path = 'fine-tuning/data/*.text'
 
-# Load training data from multiple JSON files
-training_data = []
+# Initialize an empty string to hold all file contents
+training_data_str = ""
+
+# Read the content of each file and add it to the combined_data string
 for filepath in glob.glob(training_data_path):
-    with open(filepath, 'r') as file:
-        data = json.load(file)
-        training_data.extend(data)  # Assuming each file contains a list of Q&A pairs
+    with open(filepath, 'r', encoding='utf-8') as file:
+        training_data_str += file.read() + "\n"  # Append file content and a newline for separation
 
-# Format the training data as a JSON string
-training_data_json = json.dumps(training_data, indent=2)
+# Print the combined string with all JSON contents
+print(training_data_str)
 
-# Define the modelfile content with the loaded training data
+# Define the model file content with the loaded training data
 modelfile_content = f"""
 FROM llama3.2
 
@@ -24,14 +25,14 @@ PARAMETER temperature 1
 
 # set the system message
 SYSTEM \"\"\"
-You are an agriculutural assistant for farmers in India. Form the answer based on the following mentioned data otherwise give a generic answer:
-{training_data_json}
+You are an agricultural assistant designed to help farmers in India. When a farmer asks you a question, please formulate your response based on the provided agricultural data in a friendly way not formal way If the information is unavailable in the data, provide a helpful and generic answer. The data is added below
+{training_data_str}
 \"\"\"
 """
 
-print(modelfile_content)
-
+print("creating model")
 ollama.create(model='paani', modelfile=modelfile_content)
+print("Model Created")
 
 
 # Initialize the chatbot
