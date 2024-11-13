@@ -6,53 +6,164 @@
     <title>Paani Voice Assistant</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        p {
-            margin-top: 0;
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
         }
+
+        /* Body Styling */
+        body {
+            display: flex;
+            justify-content: start;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f5f7;
+            color: #333;
+            flex-direction: column;
+            padding: 60px;
+        }
+
+        /* Logo Styling */
+        .logo {
+            width: 200px;
+            margin-bottom: 60px;
+        }
+
+        /* Main Container */
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* Header */
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Section Headers */
         h3 {
-            margin-bottom: 0;
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        /* Button Styling */
+        #recordButton {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #recordButton:hover {
+            background-color: #0056b3;
+        }
+
+        /* Status Text */
+        #recordingStatus {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* File Input Styling */
+        input[type="file"] {
+            display: block;
+            margin: 0 auto;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* Response Section */
+        #assistanceResponse {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        /* Response Headers */
+        #assistanceResponse h3 {
+            color: #333;
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+
+        /* Audio Player Styling */
+        audio {
+            width: 100%;
+            margin-top: 5px;
+            border-radius: 5px;
+        }
+
+        /* Model Info */
+        #modelId, #userInputText, #modelResponseText {
+            font-size: 14px;
+            color: #444;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            word-wrap: break-word;
         }
     </style>
 </head>
 <body>
-    <h1>Paani Voice Assistant</h1>
+    <!-- Logo -->
+    <img src="{{ url_for('static', filename='paani-logo.png') }}" alt="Paani Logo" class="logo">
 
-    <!-- Section for Recording Audio -->
-    <h3>Record audio</h3>
-    <button id="recordButton">Start/Stop Recording</button>
-    <p id="recordingStatus">Status: Idle</p>
+    <div class="container">
+        <h1>Farmer's Companion</h1>
 
-    <!-- Section for Uploading Audio -->
-    <h3>Or upload an audio file</h3>
-    <input type="file" id="audioUpload" accept="audio/*">
+        <!-- Section for Recording Audio -->
+        <h3>Record audio</h3>
+        <button id="recordButton">Start/Stop Recording</button>
+        <p id="recordingStatus">Status: Idle</p>
 
-    <!-- Display response -->
-    <div id="assistanceResponse" style="display: none;">
-        <div>
-            <h3 style="margin-bottom: 5px">Model used:</h3>
-            <div id="modelId"></div>
-        </div>
-        <div>
-            <h3 style="margin-bottom: 5px">User Input:</h3>
-            <div id="userInputText"></div>
-            <audio controls id="modelRequestPlayer">
-            Your browser does not support the audio element.
+        <!-- Section for Uploading Audio -->
+        <h3>Or upload an audio file</h3>
+        <input type="file" id="audioUpload" accept="audio/*">
+
+        <!-- Display response -->
+        <div id="assistanceResponse">
+            <div>
+                <h3>Model used:</h3>
+                <div id="modelId"></div>
+            </div>
+            <div>
+                <h3>User Input:</h3>
+                <div id="userInputText"></div>
+                <audio controls id="modelRequestPlayer">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <div>
+                <h3>Model Response:</h3>
+                <div id="modelResponseText"></div>
+            </div>
+            <h3>Chatbot response</h3>
+            <audio controls id="modelResponsePlayer">
+                Your browser does not support the audio element.
             </audio>
         </div>
-        <div>
-            <h3 style="margin-bottom: 5px">Model Response:</h3>
-            <div id="modelResponseText"></div>
-        </div>
-        <!-- Audio play button -->
-    
-
-        <h3> Chatbot response </h3>
-        <audio controls id="modelResponsePlayer">
-            Your browser does not support the audio element.
-        </audio>
     </div>
 
     <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
 </body>
 </html>
-
