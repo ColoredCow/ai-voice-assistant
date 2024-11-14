@@ -4,14 +4,7 @@ import ollama
 
 from ollama_utils import setup_model
 
-model_id = "coloredcow/paani-1b-instruct-marathi"
 
-pipe = pipeline(
-    "text-generation",
-    model=model_id,
-    torch_dtype=torch.bfloat16,
-    device_map="auto",
-)
 
 language_configs = {
     "en": {
@@ -85,11 +78,11 @@ def get_chatbot_response_stream(input_text, language):
         stream=True  # Enable streaming mode
     )
 
-    # Generate the response as a stream
-    def generate():
-        for chunk in stream:
-            msg = chunk['message']['content']
-            print(msg)
-            yield msg
+    # # Generate the response as a stream
+    # def generate():
+    #     for chunk in stream:
+    #         msg = chunk['message']['content']
+    #         print(msg)
+    #         yield msg
     
     return generate()

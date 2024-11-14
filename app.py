@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, request, url_for
+from flask import Flask, jsonify, render_template, request, Response, stream_with_context, url_for
 from gtts import gTTS
 import os
 from datetime import datetime
@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 from huggingface_hub import login
 from transcription import load_asr_model, translate_audio, translate_with_base_whisper
-from chatbot import get_chatbot_response
+from chatbot import get_chatbot_response, get_chatbot_response_stream
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -66,10 +66,8 @@ def convert_to_audio(text, language):
 def index():
     return render_template('record.html')
 
-# Flask route to record and transcribe audio
 @app.route('/process-audio', methods=['POST'])
-def record_audio_endpoint():
-    # Print current time
+def process_audio():
     print(f"Query start time: {get_current_time()}")
 
     file_name = save_audio(request.files)
@@ -79,19 +77,36 @@ def record_audio_endpoint():
     timestamped_print("Audio translate_audio", transcription)
 
     user_input = transcription
-    response_text = get_chatbot_response(user_input, selected_language)
 
-    audio_file_path = convert_to_audio(response_text, selected_language)
-    timestamped_print("converted in audio", audio_file_path)
-
-    # Print current time
-    print(f"Query end time: {get_current_time()}")
-
+    # Return metadata
     return jsonify({
         "user_input": user_input,
         "recorded_audio_path": file_name,
-        "response_text": response_text,
         "model_id": "",
+        "audio_file_path": '',
+    })
+
+
+# Route to stream chatbot response
+@app.route('/stream-response', methods=['GET'])
+def stream_response():
+    user_input = request.args.get('user_input')  # Get user input from query params
+    selected_language = 'en'  # Or retrieve dynamically if needed
+
+    def generate_streamed_response():
+        for chunk in get_chatbot_response_stream(user_input, selected_language):
+            yield f"data:{chunk['message']['content']}\n\n"
+        
+        yield "data: [END OF RESPONSE]\n\n"
+
+    return Response(stream_with_context(generate_streamed_response()), content_type='text/event-stream')
+
+@app.route('/process-tts', methods=['GET'])
+def get_audio_from_text():
+    text = request.args.get('text') 
+    audio_file_path = convert_to_audio(text, selected_language)
+
+    return jsonify({
         "audio_file_path": audio_file_path,
     })
 
