@@ -72,6 +72,7 @@ async function sendAudio(audioBlobOrFile) {
   modelRequestPlayer.src = jsonResponse.recorded_audio_path;
   modelRequestPlayer.load();
   assistanceResponse.style.display = "block";
+  modelResponseText.innerHTML = "";
 
   // Start streaming the chatbot response
   const eventSource = new EventSource(
