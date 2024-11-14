@@ -14,7 +14,7 @@ const modelRequestPlayer = document.getElementById("modelRequestPlayer");
 const urlParams = new URLSearchParams(window.location.search);
 const stream = urlParams.has("stream")
   ? urlParams.get("stream") === "true"
-  : true;
+  : false;
 const lang = urlParams.has("lang") ? urlParams.get("lang") : "en";
 
 recordButton.addEventListener("click", async () => {
