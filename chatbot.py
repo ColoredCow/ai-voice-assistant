@@ -1,5 +1,8 @@
 import torch
 from transformers import pipeline
+import ollama
+
+from ollama_utils import setup_model
 
 model_id = "coloredcow/paani-1b-instruct-marathi"
 
@@ -25,8 +28,12 @@ language_configs = {
     },
 }
 
+model_name = "paani"
 
-def get_chatbot_response(input_text, language):
+setup_model(model_name)
+
+
+def get_chatbot_response_old(input_text, language):
     instruction = language_configs[language]['chatbot_instruction']
     prompt = instruction + input_text
 
@@ -46,3 +53,21 @@ def get_chatbot_response(input_text, language):
         return response['content']
     
     return None
+
+def get_chatbot_response(input_text, language):
+    instruction = language_configs[language]['chatbot_instruction']
+    prompt = instruction + input_text
+
+    response = ollama.chat(
+        model=model_name,
+        messages=[{'role': 'user', 'content': prompt}],
+        stream=False  # Get full response, not in streaming mode
+    )
+
+    print(response['message'])
+
+    # The response will be a list, and we need to extract the content
+    if response:
+        return response['message']['content']
+    
+    return "Sorry, I couldn't understand that."
