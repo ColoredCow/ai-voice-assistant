@@ -1,13 +1,12 @@
-from flask import Flask, jsonify, render_template, request, url_for
-import torch
-from transformers import pipeline
+from flask import Flask, jsonify, render_template, request, Response, stream_with_context, url_for
 from gtts import gTTS
 import os
 from datetime import datetime
 from dotenv import load_dotenv
 import os
 from huggingface_hub import login
-from transcription import load_asr_model, translate_audio
+from transcription import load_asr_model, translate_audio, translate_with_base_whisper
+from chatbot import get_chatbot_response, get_chatbot_response_stream
 
 # Load the environment variables from the .env file
 load_dotenv()
@@ -18,69 +17,20 @@ login(token=huggingface_token)
 
 RECORDING_SAVE_PATH = "static/recordings"
 OUTPUT_SAVE_PATH = "static/outputs"
-ASR_MODEL_NAME = 'pankaj-ag/whisper-small-mr-en-translation'
+ASR_MODEL_NAME = 'pankaj-ag/whisper-medium-mr-en-translation-v2'
 
 processor, asr_model = load_asr_model(ASR_MODEL_NAME)
 
+selected_language = 'en'
+
+# Initialize Flask app
+app = Flask(__name__)
 
 def get_current_time():
     """Get the current time"""
     current_time = datetime.now()
     formatted_time = current_time.strftime("%H:%M:%S")
     return formatted_time
-
-# Initialize Flask app
-app = Flask(__name__)
-
-# Load Whisper model
-
-model_id = "coloredcow/paani-1b-instruct-marathi"
-
-pipe = pipeline(
-    "text-generation",
-    model=model_id,
-    torch_dtype=torch.bfloat16,
-    device_map="auto",
-)
-
-
-selected_language = 'en'
-language_configs = {
-    "en": {
-        "chatbot_instruction": "Please answer the following question in English:\n",
-    },
-    "hi": {
-        "chatbot_instruction": "कृपया निम्नलिखित प्रश्न का उत्तर हिंदी में दें:\n",
-    },
-    "mr": {
-        "chatbot_instruction": "कृपया पुढील प्रश्नाचे उत्तर मराठीत द्या:\n",
-    },
-    "bn": {
-        "chatbot_instruction": "দয়া করে নিচের প্রশ্নের উত্তর দিন মারাঠিতে:\n",
-    },
-}
-
-
-def get_chatbot_response(input_text, language):
-    instruction = language_configs[language]['chatbot_instruction']
-    prompt = instruction + input_text
-
-    if model_id == 'meta-llama/Llama-3.2-1B-Instruct' or model_id == 'coloredcow/paani-1b-instruct-marathi' or model_id == 'pankaj-ag/fine_tuned_model':
-        print('inside model id check')
-        messages = [
-            # {"role": "system", "content": "You are a chatbot designed to help Indian farmers on any agriculture related questions they have. Be a helpful guide and friend to empower them take best decisions for their crops and growth. Keep your responses brief and short until asked for details."},
-            {"role": "user", "content": prompt},
-        ]
-        outputs = pipe(
-            messages,
-            max_new_tokens=256,
-            do_sample=False,
-        )
-        response = outputs[0]["generated_text"][-1]
-        print("response from model......", response)
-        return response['content']
-    
-    return None
 
 def timestamped_print(*args, **kwargs):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -116,32 +66,64 @@ def convert_to_audio(text, language):
 def index():
     return render_template('record.html')
 
-# Flask route to record and transcribe audio
 @app.route('/process-audio', methods=['POST'])
-def record_audio_endpoint():
-    # Print current time
+def process_audio():
     print(f"Query start time: {get_current_time()}")
 
-    file_name = save_audio(request.files)
+    files = request.files
+    stream = request.form.get('stream', 'true')
+    stream = request.args.get('stream', 'false').lower()
+    if stream == 'true':
+        stream = True
+    else:
+        stream = False
+
+    lang = request.form.get("lang", selected_language)
+    
+
+    file_name = save_audio(files)
     timestamped_print("Audio file saved")
 
-    transcription = translate_audio(file_name, asr_model, processor, selected_language)
+    transcription = translate_audio(file_name, asr_model, processor, lang)
     timestamped_print("Audio translate_audio", transcription)
 
     user_input = transcription
-    response_text = get_chatbot_response(user_input, selected_language)
 
-    audio_file_path = convert_to_audio(response_text, selected_language)
-    timestamped_print("converted in audio", audio_file_path)
+    chat_bot_answer = ""
 
-    # Print current time
-    print(f"Query end time: {get_current_time()}")
+    if stream == False:
+        chat_bot_answer = get_chatbot_response(user_input, lang)
 
+    # Return metadata
     return jsonify({
         "user_input": user_input,
         "recorded_audio_path": file_name,
-        "response_text": response_text,
-        "model_id": model_id,
+        "model_id": "",
+        "audio_file_path": '',
+        "chat_bot_answer": chat_bot_answer
+    })
+
+
+# Route to stream chatbot response
+@app.route('/stream-response', methods=['GET'])
+def stream_response():
+    user_input = request.args.get('user_input')
+    lang = request.args.get('lang', selected_language)
+
+    def generate_streamed_response():
+        for chunk in get_chatbot_response_stream(user_input, lang):
+            yield f"data:{chunk['message']['content']}\n\n"
+        
+        yield "data: [END OF RESPONSE]\n\n"
+
+    return Response(stream_with_context(generate_streamed_response()), content_type='text/event-stream')
+
+@app.route('/process-tts', methods=['GET'])
+def get_audio_from_text():
+    text = request.args.get('text') 
+    audio_file_path = convert_to_audio(text, selected_language)
+
+    return jsonify({
         "audio_file_path": audio_file_path,
     })
 

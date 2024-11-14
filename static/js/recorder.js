@@ -11,6 +11,12 @@ const modelResponseText = document.getElementById("modelResponseText");
 const modelResponsePlayer = document.getElementById("modelResponsePlayer");
 const modelRequestPlayer = document.getElementById("modelRequestPlayer");
 
+const urlParams = new URLSearchParams(window.location.search);
+const stream = urlParams.has("stream")
+  ? urlParams.get("stream") === "true"
+  : true;
+const lang = urlParams.has("lang") ? urlParams.get("lang") : "en";
+
 recordButton.addEventListener("click", async () => {
   assistanceResponse.style.display = "none";
   if (!isRecording) {
@@ -57,30 +63,92 @@ function stopRecording() {
 async function sendAudio(audioBlobOrFile) {
   const formData = new FormData();
   formData.append("audio_data", audioBlobOrFile, "recording.wav");
+  formData.append("stream", stream);
+  formData.append("lang", lang);
 
+  // Send audio and get metadata response
   const response = await fetch("/process-audio", {
     method: "POST",
     body: formData,
   });
-
   const jsonResponse = await response.json();
-  console.log({ jsonResponse });
+
+  // Display metadata
   recordingStatus.textContent = "Status: Idle";
   modelId.innerHTML = jsonResponse.model_id;
   userInputText.innerHTML = jsonResponse.user_input;
-  console.log("jsonResponse.response_text....", jsonResponse.response_text);
-  console.log("marked typeof", typeof marked);
-  console.log(
-    "marked jsonResponse.response_text",
-    marked.parse(jsonResponse.response_text)
-  );
-  modelResponseText.innerHTML = marked.parse(jsonResponse.response_text);
-
   modelRequestPlayer.src = jsonResponse.recorded_audio_path;
   modelRequestPlayer.load();
+  assistanceResponse.style.display = "block";
+  modelResponseText.innerHTML = "";
+  chatBotAnswer = jsonResponse.chat_bot_answer;
 
+  if (stream == true) {
+    streamResponse(jsonResponse);
+  } else {
+    setChatbotResponse(chatBotAnswer);
+    convertToAudio(chatBotAnswer);
+  }
+}
+
+async function convertToAudio(text = false) {
+  if (text == false) {
+    text = modelResponseText.innerHTML;
+  }
+
+  // URL-encode the text to handle special characters
+  const encodedText = encodeURIComponent(text);
+
+  // Send the encoded text in the request
+  const response = await fetch(`/process-tts?text=${encodedText}`);
+
+  // Handle the response
+  const jsonResponse = await response.json();
   modelResponsePlayer.src = jsonResponse.audio_file_path;
   modelResponsePlayer.load();
+}
 
-  assistanceResponse.style.display = "block";
+async function streamResponse(jsonResponse) {
+  // Start streaming the chatbot response
+  const eventSource = new EventSource(
+    `/stream-response?user_input=${encodeURIComponent(
+      jsonResponse.user_input
+    )}&lang=${lang}`
+  );
+
+  eventSource.onmessage = function (event) {
+    const chunk = event.data;
+    const lastChar = modelResponseText.innerHTML.slice(-1);
+
+    if (chunk === "[END OF RESPONSE]") {
+      // End of stream reached, close the connection and trigger next step
+      console.log("closing the stream");
+      eventSource.close();
+      convertToAudio(false);
+      return true;
+    }
+
+    // Check if the chunk starts with a space and add it only if needed
+    if (lastChar !== " " && chunk[0] !== " " && chunk.length > 0) {
+      modelResponseText.innerHTML += " ";
+    }
+
+    modelResponseText.innerHTML += chunk;
+  };
+
+  // Trigger the next request once the streaming completes
+  eventSource.onclose = function () {
+    console.log("Streaming completed. Sending next request...");
+    // Call the next function or send another request after streaming completes
+    convertToAudio(false); // Replace with your next function or request
+  };
+
+  eventSource.onerror = function (event) {
+    console.error("Error in EventSource:", event);
+    eventSource.close();
+  };
+}
+
+function setChatbotResponse(chatBotAnswer) {
+  modelResponseText.innerHTML = chatBotAnswer;
 }
