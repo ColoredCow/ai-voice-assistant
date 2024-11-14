@@ -71,3 +71,25 @@ def get_chatbot_response(input_text, language):
         return response['message']['content']
     
     return "Sorry, I couldn't understand that."
+
+
+# Chatbot response using Ollama (streaming mode)
+def get_chatbot_response_stream(input_text, language):
+    instruction = language_configs[language]['chatbot_instruction']
+    prompt = instruction + input_text
+
+    # Send the prompt to Ollama and get a streaming response
+    return ollama.chat(
+        model=model_name,
+        messages=[{'role': 'user', 'content': prompt}],
+        stream=True  # Enable streaming mode
+    )
+
+    # Generate the response as a stream
+    def generate():
+        for chunk in stream:
+            msg = chunk['message']['content']
+            print(msg)
+            yield msg
+    
+    return generate()

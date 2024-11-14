@@ -34,8 +34,6 @@ def get_model_file():
 def setup_model(model_name):
     model_file_content = get_model_file()
 
-    print("model_file_content", model_file_content)
-
     ollama.create(model=model_name, modelfile=model_file_content)
     print("Model is ready")
 
