@@ -71,6 +71,8 @@ def get_chatbot_response_stream(input_text, language):
     instruction = language_configs[language]['chatbot_instruction']
     prompt = instruction + input_text
 
+    print(prompt)
+
     # Send the prompt to Ollama and get a streaming response
     return ollama.chat(
         model=model_name,

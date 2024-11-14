@@ -70,13 +70,29 @@ def index():
 def process_audio():
     print(f"Query start time: {get_current_time()}")
 
-    file_name = save_audio(request.files)
+    files = request.files
+    stream = request.form.get('stream', 'true')
+    stream = request.args.get('stream', 'false').lower()
+    if stream == 'true':
+        stream = True
+    else:
+        stream = False
+
+    lang = request.form.get("lang", selected_language)
+    
+
+    file_name = save_audio(files)
     timestamped_print("Audio file saved")
 
-    transcription = translate_audio(file_name, asr_model, processor, selected_language)
+    transcription = translate_audio(file_name, asr_model, processor, lang)
     timestamped_print("Audio translate_audio", transcription)
 
     user_input = transcription
+
+    chat_bot_answer = ""
+
+    if stream == False:
+        chat_bot_answer = get_chatbot_response(user_input, lang)
 
     # Return metadata
     return jsonify({
@@ -84,17 +100,18 @@ def process_audio():
         "recorded_audio_path": file_name,
         "model_id": "",
         "audio_file_path": '',
+        "chat_bot_answer": chat_bot_answer
     })
 
 
 # Route to stream chatbot response
 @app.route('/stream-response', methods=['GET'])
 def stream_response():
-    user_input = request.args.get('user_input')  # Get user input from query params
-    selected_language = 'en'  # Or retrieve dynamically if needed
+    user_input = request.args.get('user_input')
+    lang = request.args.get('lang', selected_language)
 
     def generate_streamed_response():
-        for chunk in get_chatbot_response_stream(user_input, selected_language):
+        for chunk in get_chatbot_response_stream(user_input, lang):
             yield f"data:{chunk['message']['content']}\n\n"
         
         yield "data: [END OF RESPONSE]\n\n"

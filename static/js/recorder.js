@@ -11,6 +11,12 @@ const modelResponseText = document.getElementById("modelResponseText");
 const modelResponsePlayer = document.getElementById("modelResponsePlayer");
 const modelRequestPlayer = document.getElementById("modelRequestPlayer");
 
+const urlParams = new URLSearchParams(window.location.search);
+const stream = urlParams.has("stream")
+  ? urlParams.get("stream") === "true"
+  : true;
+const lang = urlParams.has("lang") ? urlParams.get("lang") : "en";
+
 recordButton.addEventListener("click", async () => {
   assistanceResponse.style.display = "none";
   if (!isRecording) {
@@ -57,6 +63,8 @@ function stopRecording() {
 async function sendAudio(audioBlobOrFile) {
   const formData = new FormData();
   formData.append("audio_data", audioBlobOrFile, "recording.wav");
+  formData.append("stream", stream);
+  formData.append("lang", lang);
 
   // Send audio and get metadata response
   const response = await fetch("/process-audio", {
@@ -73,10 +81,39 @@ async function sendAudio(audioBlobOrFile) {
   modelRequestPlayer.load();
   assistanceResponse.style.display = "block";
   modelResponseText.innerHTML = "";
+  chatBotAnswer = jsonResponse.chat_bot_answer;
 
+  if (stream == true) {
+    streamResponse(jsonResponse);
+  } else {
+    setChatbotResponse(chatBotAnswer);
+    convertToAudio(chatBotAnswer);
+  }
+}
+
+async function convertToAudio(text = false) {
+  if (text == false) {
+    text = modelResponseText.innerHTML;
+  }
+
+  // URL-encode the text to handle special characters
+  const encodedText = encodeURIComponent(text);
+
+  // Send the encoded text in the request
+  const response = await fetch(`/process-tts?text=${encodedText}`);
+
+  // Handle the response
+  const jsonResponse = await response.json();
+  modelResponsePlayer.src = jsonResponse.audio_file_path;
+  modelResponsePlayer.load();
+}
+
+async function streamResponse(jsonResponse) {
   // Start streaming the chatbot response
   const eventSource = new EventSource(
-    `/stream-response?user_input=${encodeURIComponent(jsonResponse.user_input)}`
+    `/stream-response?user_input=${encodeURIComponent(
+      jsonResponse.user_input
+    )}&lang=${lang}`
   );
 
   eventSource.onmessage = function (event) {
@@ -87,7 +124,7 @@ async function sendAudio(audioBlobOrFile) {
       // End of stream reached, close the connection and trigger next step
       console.log("closing the stream");
       eventSource.close();
-      convertToAudio();
+      convertToAudio(false);
       return true;
     }
 
@@ -103,7 +140,7 @@ async function sendAudio(audioBlobOrFile) {
   eventSource.onclose = function () {
     console.log("Streaming completed. Sending next request...");
     // Call the next function or send another request after streaming completes
-    convertToAudio(); // Replace with your next function or request
+    convertToAudio(false); // Replace with your next function or request
   };
 
   eventSource.onerror = function (event) {
@@ -112,16 +149,6 @@ async function sendAudio(audioBlobOrFile) {
   };
 }
 
-async function convertToAudio() {
-  let text = modelResponseText.innerHTML;
-  // URL-encode the text to handle special characters
-  const encodedText = encodeURIComponent(text);
-
-  // Send the encoded text in the request
-  const response = await fetch(`/process-tts?text=${encodedText}`);
-
-  // Handle the response
-  const jsonResponse = await response.json();
-  modelResponsePlayer.src = jsonResponse.audio_file_path;
-  modelResponsePlayer.load();
+function setChatbotResponse(chatBotAnswer) {
+  modelResponseText.innerHTML = chatBotAnswer;
 }
