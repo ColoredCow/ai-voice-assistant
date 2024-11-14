@@ -17,7 +17,7 @@ login(token=huggingface_token)
 
 RECORDING_SAVE_PATH = "static/recordings"
 OUTPUT_SAVE_PATH = "static/outputs"
-ASR_MODEL_NAME = 'pankaj-ag/whisper-small-mr-en-translation'
+ASR_MODEL_NAME = 'pankaj-ag/whisper-medium-mr-en-translation-v2'
 
 processor, asr_model = load_asr_model(ASR_MODEL_NAME)
 
