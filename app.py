@@ -98,7 +98,7 @@ def process_audio():
     return jsonify({
         "user_input": user_input,
         "recorded_audio_path": file_name,
-        "model_id": "",
+        "model_id": "Paani - llama3.2",
         "audio_file_path": '',
         "chat_bot_answer": chat_bot_answer
     })
